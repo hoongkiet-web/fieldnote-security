@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Request an assessment — TrustLayer Security</title>
+<title>Request an assessment - TrustLayer Security</title>
 <meta name="description" content="Send your domain and a bit of context and I'll run a full vulnerability assessment, review every finding myself, and send back a prioritized report.">
 <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -16,6 +16,7 @@
       <a href="services.html">Services</a>
       <a href="sample-report.html">Sample Report</a>
       <a href="gdpr-checker.html">GDPR Checker</a>
+      <a href="email-security.html">Email Security</a>
       <a href="about.html">About</a>
       <a href="contact.html" class="btn btn-primary" aria-current="page">Get Assessment</a>
     </nav>
@@ -32,7 +33,7 @@
   <section class="contact-hero">
     <div class="container">
       <h1>Request an assessment</h1>
-      <p>Tell me about your site and I'll take it from here — I run the full scan, review every finding myself, and send back a prioritized report. No self-service scanning, no dashboard.</p>
+      <p>Tell me about your site and I'll take it from here - I run the full scan, review every finding myself, and send back a prioritized report. No self-service scanning, no dashboard.</p>
     </div>
   </section>
 
@@ -41,7 +42,7 @@
       <div class="form-card" id="formCard">
 
         <form id="contactForm" action="https://formspree.io/f/nzqpgg1b" method="POST">
-          <p class="form-note">All fields are required.</p>
+          <p class="form-note">All fields are required, including at least one service below.</p>
 
           <div class="field">
             <label for="name">Name</label>
@@ -63,15 +64,23 @@
             <input type="url" id="website" name="website" placeholder="https://yourcompany.com" required>
           </div>
 
-          <div class="field">
-            <label for="service">Which service are you interested in?</label>
-            <select id="service" name="service" required>
-              <option value="" disabled selected>Select one…</option>
-              <option value="Vulnerability Assessment">Vulnerability Assessment</option>
-              <option value="GDPR Compliance Check">GDPR Compliance Check</option>
-              <option value="Both">Both</option>
-            </select>
-          </div>
+          <fieldset class="field checkbox-group-field">
+            <legend>Which service(s) are you interested in?</legend>
+            <div class="checkbox-group" id="serviceGroup">
+              <label class="checkbox-option">
+                <input type="checkbox" name="service" value="Vulnerability Assessment">
+                Vulnerability Assessment
+              </label>
+              <label class="checkbox-option">
+                <input type="checkbox" name="service" value="GDPR Compliance Check">
+                GDPR Compliance Check
+              </label>
+              <label class="checkbox-option">
+                <input type="checkbox" name="service" value="Email Security Check">
+                Email Security Check
+              </label>
+            </div>
+          </fieldset>
 
           <div class="field">
             <label for="message">Message</label>
@@ -83,7 +92,7 @@
             <label for="_gotcha">Leave this field empty</label>
             <input type="text" id="_gotcha" name="_gotcha" tabindex="-1" autocomplete="off">
           </div>
-          <input type="hidden" name="_subject" value="New assessment request — TrustLayer Security">
+          <input type="hidden" name="_subject" value="New assessment request - TrustLayer Security">
 
           <div class="form-actions">
             <button type="submit" class="btn btn-primary" id="submitBtn">Send request</button>
@@ -103,6 +112,7 @@
       <a href="services.html">Services</a>
       <a href="sample-report.html">Sample Report</a>
       <a href="gdpr-checker.html">GDPR Checker</a>
+      <a href="email-security.html">Email Security</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
     </div>
@@ -133,6 +143,12 @@
 
     if (!form.reportValidity()) return;
 
+    var servicesChecked = form.querySelectorAll('input[name="service"]:checked');
+    if (servicesChecked.length === 0) {
+      status.textContent = 'Please select at least one service.';
+      return;
+    }
+
     status.textContent = '';
     submitBtn.disabled = true;
     submitBtn.setAttribute('aria-busy', 'true');
@@ -146,7 +162,7 @@
       if (response.ok) {
         card.innerHTML =
           '<div class="form-success">' +
-          '<h3>Thanks — your request is in.</h3>' +
+          '<h3>Thanks - your request is in.</h3>' +
           '<p>I\'ll take a look and get back to you at the email you provided.</p>' +
           '</div>';
       } else {
@@ -156,7 +172,7 @@
       submitBtn.disabled = false;
       submitBtn.removeAttribute('aria-busy');
       submitBtn.textContent = 'Send request';
-      status.textContent = 'Something went wrong sending this — please try again, or email contact@trustlayersecurity.com directly.';
+      status.textContent = 'Something went wrong sending this - please try again, or email contact@trustlayersecurity.com directly.';
     });
   });
 

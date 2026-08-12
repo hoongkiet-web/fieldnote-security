@@ -3,7 +3,7 @@
    near-black navy ground, slate card surfaces, sky-blue accent, functional
    severity colors reserved for real findings only. */
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root {
   /* surfaces */
@@ -33,7 +33,7 @@
   --error-text: #f87171; /* lighter than --sev-high for 4.5:1+ as foreground text */
 
   /* type */
-  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
 
@@ -471,7 +471,7 @@ section.tight { padding: 40px 0; }
   margin-right: 10px;
   margin-top: 10px;
 }
-.teaser-visual .mock-stat b { color: var(--sev-medium); font-family: var(--font-display); font-size: 1.2rem; }
+.teaser-visual .mock-stat b { color: var(--sev-medium); font-family: var(--font-mono); font-size: 1.2rem; }
 .teaser-visual .mock-stat i { font-style: normal; font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
 
 @media (min-width: 780px) {
@@ -573,8 +573,8 @@ section.tight { padding: 40px 0; }
 /* ---------- pull statement ---------- */
 
 .pull-statement {
-  border-left: 3px solid var(--accent);
-  padding-left: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
   max-width: 42rem;
 }
 .pull-statement p {
@@ -639,7 +639,7 @@ section.tight { padding: 40px 0; }
   text-align: center;
   border-left: 4px solid var(--border);
 }
-.report-body .stat-card .value { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; }
+.report-body .stat-card .value { font-family: var(--font-mono); font-size: 1.7rem; font-weight: 700; }
 .report-body .stat-card .label {
   font-size: 0.68rem; color: var(--text-secondary); text-transform: uppercase;
   letter-spacing: 0.05em; margin-top: 4px;
@@ -665,6 +665,7 @@ section.tight { padding: 40px 0; }
   border-radius: 0 0 8px 8px;
   padding: 16px;
   border-top: 1px solid var(--border-subtle);
+  overflow-x: auto;
 }
 
 .report-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
@@ -793,6 +794,39 @@ section.tight { padding: 40px 0; }
 }
 
 .field textarea { resize: vertical; min-height: 120px; }
+
+.checkbox-group-field {
+  border: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+.checkbox-group-field legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 7px;
+  padding: 0;
+}
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.checkbox-option input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
 
 .field input:invalid:not(:placeholder-shown),
 .field textarea:invalid:not(:placeholder-shown) {

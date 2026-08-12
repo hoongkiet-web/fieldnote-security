@@ -16,23 +16,23 @@ Primary: startup founders and small dev teams (early-stage companies with a tech
 
 ## Product Purpose
 
-A lead-generation / credibility site for manual security/compliance consulting services. Two service lines as of 2026-08-12: (1) vulnerability assessment, (2) GDPR compliance check. Both exist to get a prospect to trust the operator enough to submit a request via the contact form. Success = qualified contact-form submissions, not self-service signups.
+A lead-generation / credibility site for manual security/compliance consulting services. Three service lines as of 2026-08-12: (1) vulnerability assessment, (2) GDPR compliance check, (3) email security (SPF/DKIM/DMARC) check. All three exist to get a prospect to trust the operator enough to submit a request via the contact form. Success = qualified contact-form submissions, not self-service signups.
 
 ## Positioning
 
-Not an automated scanner-as-a-service, and not an automated compliance-score tool. For vulnerability assessment: the operator runs the scan (DNS recon, port scan, SSL/TLS analysis, header/path checks, CVE lookup) themselves and manually reviews the output. For the GDPR check: a technical scan (cookie consent, tracking scripts, privacy policy presence, HTTPS) plus a structured data-practices questionnaire, both reviewed manually together - explicitly "no automated compliance score, no generic checklist." Both lean on hands-on enterprise experience (9+ years across Sky and BT) plus current MSc Cyber Security study. The differentiator across both services is expert human review attached to every report, not tooling novelty - a neighboring "instant automated" product could not truthfully claim the same review step.
+Not an automated scanner-as-a-service, not an automated compliance-score tool, and not a generic "email health score" checker. For vulnerability assessment: the operator runs the scan (DNS recon, port scan, SSL/TLS analysis, header/path checks, CVE lookup) themselves and manually reviews the output. For the GDPR check: a technical scan (cookie consent, tracking scripts, privacy policy presence, HTTPS) plus a structured data-practices questionnaire, both reviewed manually together. For the email security check: an SPF/DKIM/DMARC DNS scan plus a spoofing risk assessment, reviewed manually into an exact, prioritized list of DNS records to add. All three explicitly reject "generic automated score" framing. Each leans on hands-on enterprise experience (9+ years across Sky and BT) plus current MSc Cyber Security study. The differentiator across all three services is expert human review attached to every report, not tooling novelty - a neighboring "instant automated" product could not truthfully claim the same review step.
 
 ## Operating Context
 
-Client-facing flow: prospect lands on the site -> reads homepage/services/sample report/GDPR checker/about -> submits a request (selecting Vulnerability Assessment, GDPR Compliance Check, or Both) via a Formspree-backed intake form -> operator manually runs the relevant work (CLI scanner `trustlayer_scan.py` in the sibling `cybersec-agency` project for vulnerability assessments; scan + questionnaire review for GDPR) -> operator reviews findings -> operator sends the finished report back to the client directly (not through the website). No account system, no self-service scan trigger, no payment flow in v1. The GDPR questionnaire itself is not yet built as an on-site form - it's described on the GDPR Checker page as part of the process, delivered separately (e.g. by the operator after intake) until/unless a dedicated questionnaire page is requested.
+Client-facing flow: prospect lands on the site -> reads homepage/services/sample report/GDPR checker/email security/about -> submits a request (checking one or more of Vulnerability Assessment, GDPR Compliance Check, Email Security Check) via a Formspree-backed intake form -> operator manually runs the relevant work (CLI scanner `trustlayer_scan.py` in the sibling `cybersec-agency` project for vulnerability assessments; scan + questionnaire review for GDPR; DNS record scan + review for email security) -> operator reviews findings -> operator sends the finished report back to the client directly (not through the website). No account system, no self-service scan trigger, no payment flow in v1. The GDPR questionnaire and the email-security DNS scan are described on their own pages as part of the process but are not yet built as on-site self-service tools - delivered by the operator after intake until/unless a dedicated page is requested.
 
 ## Capabilities and Constraints
 
-- v1 has no self-service scanning - the contact form only captures intake info (including which service), it does not trigger the scanner or generate a GDPR score.
+- v1 has no self-service scanning - the contact form only captures intake info (including which service(s), via checkboxes since a client may want more than one), it does not trigger any scanner or generate an automated score.
 - Form submissions go through Formspree to the operator's email; no backend/database in v1.
 - Pricing model is quote-based, not fixed self-checkout pricing (exact pricing structure still undecided - do not invent numbers).
 - Site must be mobile-first and tested at 375px width.
-- Six pages for v1: Homepage, Services, Sample Report, GDPR Checker, Contact/Intake, About/Credentials.
+- Seven pages for v1: Homepage, Services, Sample Report, GDPR Checker, Email Security, Contact/Intake, About/Credentials.
 
 ## Brand Commitments
 

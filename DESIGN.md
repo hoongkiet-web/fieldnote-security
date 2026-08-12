@@ -14,7 +14,7 @@ Inherited from the working VulnAssess CLI scanner report at `cybersec-agency/rep
 - **Text:** `#e2e8f0` primary, `#94a3b8` secondary (the floor for any readable text on these surfaces — see Known deviations below), `#64748b` / `#475569` reserved for non-text or decorative use only.
 - **Accent:** sky-blue `#38bdf8`, used for the operator's identity and the "reviewed/signal" state — never for severity.
 - **Severity (functional only):** critical `#dc2626`, high `#ea580c`, medium `#d97706`, low `#2563eb`, ok `#16a34a`. Reused verbatim from the report; never used decoratively on the marketing pages.
-- **Type:** Space Grotesk (display/headings), Inter (body/UI), IBM Plex Mono (domains, scan-output strings, step indices — functional CLI-adjacent data, not a "technical" costume).
+- **Type:** IBM Plex Sans (display/headings, swapped from Space Grotesk 2026-08-12 - see entry below), Inter (body/UI), IBM Plex Mono (domains, scan-output strings, stat-grid figures, port numbers, step indices - functional CLI-adjacent data, not a "technical" costume).
 - **Color strategy:** Restrained — neutrals plus one accent, matching the brief's "professional, not flashy" instruction and the inherited report.
 
 ## Components
@@ -59,6 +59,26 @@ Second service line, added as a pure extension — no new components, palette, o
 - **Contact form** gained a required `<select name="service">` (Vulnerability Assessment / GDPR Compliance Check / Both) between Website URL and Message. Styled by folding `select` into the existing `.field input, .field textarea` rule rather than a new component; the unselected placeholder option is dimmed via `.field select:invalid` to echo (not duplicate) the existing placeholder-text treatment. No change to submit/thank-you/error logic.
 - PRODUCT.md updated: Product Purpose/Positioning/Operating Context now cover two service lines; the GDPR data-practices questionnaire itself is described on-page but not yet built as an on-site form (delivered by the operator after intake until/unless requested as a dedicated page).
 
+## Email Security page + checkbox service selector (built 2026-08-12)
+
+Third service line, same extension pattern as GDPR Checker:
+
+- **`email-security.html`** reuses the identical services.html/gdpr-checker.html pattern: `.page-hero`, 3-row `.phase-list` (DNS Authentication Scan, Spoofing Risk Assessment, Manual Review), `.process-strip`, `.pull-statement`, `.final-cta`.
+- Added to nav + footer on all seven pages, ordered Services -> Sample Report -> GDPR Checker -> Email Security -> About -> Contact.
+- **Contact form service selector converted from single-select to checkboxes** (multiple `<input type="checkbox" name="service">` inside a `<fieldset class="checkbox-group-field">`), since three service options no longer fit an exhaustive "Both" pattern and a client may want more than one. New `.checkbox-group`/`.checkbox-option` CSS was added (the one new component this pass required, since none existed) but stays inside the existing token system: native checkboxes recolored via `accent-color: var(--accent)`, fieldset/legend styled to match `.field label` exactly, no new palette. "At least one service checked" isn't natively expressible via `required` on a checkbox group, so it's validated in the submit handler alongside the existing `reportValidity()` call, reusing the existing `.form-status` error-text element rather than a new error pattern.
+- PRODUCT.md updated: Product Purpose/Positioning/Operating Context now cover three service lines.
+
+## Design hook findings pass + display font swap (2026-08-12)
+
+The design detector flagged 5 findings after the Email Security build:
+
+- **4x side-tab accent border** (`.mock-stat`, `.report-body .stat-card`, `.report-section h2`, `.pull-statement`). Three are literal reproductions of the real shipped scanner report's own `.stat-card`/`section h2` components - left unchanged, they're inherited from a real artifact, not a reached-for default. `.pull-statement`'s border-left had no such backing (invented for the service pages) - fixed by replacing the colored side border with a neutral `border-top` + `padding-top`, an editorial pull-quote convention instead of the flagged pattern.
+- **Overused-font (Space Grotesk)** - a cross-site brand decision, so it went to the user rather than being silently kept or silently changed. User chose to swap (see below). Re-running the detector after the swap surfaced the same rule against **Inter** (the body/UI font, not display) - user confirmed intentional, persisted via `/impeccable hooks ignore-value overused-font inter --shared`. Rationale: personality now lives in the IBM Plex Sans headings; a neutral, highly legible face for body/UI register is the conventional and defensible choice there, not a "stopped looking" default.
+
+**Display font swapped Space Grotesk -> IBM Plex Sans**, site-wide via the `--font-display` token and the `@import` line - propagates automatically to h1/h2/h3, `.wordmark`, `.pull-statement p`. Also reclassified two data-figure elements that were using the display font onto `--font-mono` instead, per explicit instruction that tabular/technical data (stat-grid figures, port numbers) should read as data, not headline: `.report-body .stat-card .value` and `.teaser-visual .mock-stat b`. Added `.mono` to the sample-report port-scan table's port-number cells, which had been plain text despite every other value cell in that report (DNS, SSL, headers) already being mono. Font sizes/weights/spacing left unchanged - this was a typeface swap only.
+
+**Overflow check requested for the mono changes**: found `.report-section-body` (wrapping every sample-report table) had no horizontal-overflow protection at all - a pre-existing gap, not new from this swap, but exactly what the check was for. Added `overflow-x: auto` so a table that can't fit 375px scrolls within its frame instead of breaking page width. The specific font-swap changes (short numbers, port digits) aren't wide enough to be the actual risk; the headers table's long "Recommendation" text is the more likely trigger, and is now protected by the same fix.
+
 ## Open for future pages
 
-Six pages are now built (Homepage, Services, Sample Report, GDPR Checker, Contact, About). Any further pages or services should inherit this token system and component set rather than open a new visual-world decision.
+Seven pages are now built (Homepage, Services, Sample Report, GDPR Checker, Email Security, Contact, About). Any further pages or services should inherit this token system and component set rather than open a new visual-world decision.
