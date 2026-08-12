@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — TrustLayer Security</title>
+<meta name="description" content="TrustLayer Security is one person, not an automated tool or an agency — 9+ years in enterprise production environments, Cisco security certifications, and an MSc in Cyber Security in progress.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="wordmark">Trust<span>Layer</span> Security</a>
+    <nav class="nav-links">
+      <a href="services.html">Services</a>
+      <a href="sample-report.html">Sample Report</a>
+      <a href="about.html" aria-current="page">About</a>
+      <a href="contact.html" class="btn btn-primary">Get Assessment</a>
+    </nav>
+    <button class="mobile-menu-btn" aria-label="Menu" aria-expanded="false" id="menuBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-hero">
+    <div class="container">
+      <h1>The person behind every report</h1>
+      <p>TrustLayer Security is one person — not an agency, not an automated pipeline. Here's the background behind the review.</p>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container">
+      <div class="about-body reveal">
+        <p>I'm Kiet. I run TrustLayer Security as a one-person practice: I run the scan, I review the output, and I'm the one who sends you the report — there's no queue, no junior analyst, no automated summary generator in between.</p>
+        <p><strong>9+ years in enterprise production and QA environments</strong> — Senior Test Analyst and Production Manager across Sky Q, Sky Mobile, and sky.com, plus contracting work at BT. That's not a security title, and I won't pretend it is. What it gives me is time spent inside live, production-scale systems: enough to know that an open port or a missing header means something different depending on what's actually running behind it.</p>
+        <p>The security side is deliberate and ongoing: Cisco CyberOps Associate and Cisco Certified Ethical Hacker certifications, and an <strong>MSc in Cyber Security at the Open University</strong>, currently in progress.</p>
+        <p>Why the manual review matters: a scanner reports everything it finds, with no sense of which findings are routine and which are actually dangerous for your specific setup. Left as raw output, that's noise — and noise either gets ignored or wastes your time chasing the wrong thing first. Reviewing every result myself is how that gets filtered down to what's real and what to fix first.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>Credentials</h2>
+      </div>
+      <div class="credential-detail reveal">
+        <div class="credential-row">
+          <h3>Cisco CyberOps Associate</h3>
+          <p>SOC operations, security monitoring, and incident detection and response fundamentals.</p>
+        </div>
+        <div class="credential-row">
+          <h3>Cisco Certified Ethical Hacker</h3>
+          <p>Offensive security methodology — the same attacker's-eye mindset used to prioritize which findings in your report actually matter.</p>
+        </div>
+        <div class="credential-row">
+          <h3>MSc Cyber Security — Open University (in progress)</h3>
+          <p>Covering SIEM and SOC operations, cryptography, malware and incident response, and penetration testing — the formal grounding behind every review.</p>
+        </div>
+        <div class="credential-row">
+          <h3>9+ years, Sky &amp; BT</h3>
+          <p>Senior Test Analyst and Production Manager across Sky Q, Sky Mobile, and sky.com, plus contracting work at BT — production and QA experience across 300+ releases a year.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div class="container">
+      <h2>Ready to have your site reviewed properly?</h2>
+      <a href="contact.html" class="btn btn-primary">Get Assessment</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container footer-row">
+    <div class="footer-links">
+      <a href="services.html">Services</a>
+      <a href="sample-report.html">Sample Report</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <p class="footer-meta"><a href="mailto:contact@trustlayersecurity.com">contact@trustlayersecurity.com</a> &nbsp;·&nbsp; Authorized use only &nbsp;·&nbsp; © 2026 TrustLayer Security</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var menuBtn = document.getElementById('menuBtn');
+  var navLinks = document.querySelector('.nav-links');
+  if (menuBtn && navLinks) {
+    menuBtn.addEventListener('click', function () {
+      var open = navLinks.classList.toggle('mobile-open');
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+
+  if (!('IntersectionObserver' in window)) return;
+  document.documentElement.classList.add('js-ready');
+
+  var els = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+</body>
+</html>

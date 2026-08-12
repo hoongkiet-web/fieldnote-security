@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request an assessment — TrustLayer Security</title>
+<meta name="description" content="Send your domain and a bit of context and I'll run a full vulnerability assessment, review every finding myself, and send back a prioritized report.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="wordmark">Trust<span>Layer</span> Security</a>
+    <nav class="nav-links">
+      <a href="services.html">Services</a>
+      <a href="sample-report.html">Sample Report</a>
+      <a href="about.html">About</a>
+      <a href="contact.html" class="btn btn-primary" aria-current="page">Get Assessment</a>
+    </nav>
+    <button class="mobile-menu-btn" aria-label="Menu" aria-expanded="false" id="menuBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <section class="contact-hero">
+    <div class="container">
+      <h1>Request an assessment</h1>
+      <p>Tell me about your site and I'll take it from here — I run the full scan, review every finding myself, and send back a prioritized report. No self-service scanning, no dashboard.</p>
+    </div>
+  </section>
+
+  <section class="contact-section">
+    <div class="container">
+      <div class="form-card" id="formCard">
+
+        <form id="contactForm" action="https://formspree.io/f/nzqpgg1b" method="POST">
+          <p class="form-note">All fields are required.</p>
+
+          <div class="field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Jane Doe" autocomplete="name" required>
+          </div>
+
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="jane@company.com" autocomplete="email" required>
+          </div>
+
+          <div class="field">
+            <label for="company">Company name</label>
+            <input type="text" id="company" name="company" placeholder="Company Ltd" autocomplete="organization" required>
+          </div>
+
+          <div class="field">
+            <label for="website">Website URL</label>
+            <input type="url" id="website" name="website" placeholder="https://yourcompany.com" required>
+          </div>
+
+          <div class="field">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Tell me a bit about your site or stack and what you'd like the assessment to focus on." required></textarea>
+          </div>
+
+          <!-- Formspree spam honeypot - real users never see or fill this -->
+          <div class="honeypot-field" aria-hidden="true">
+            <label for="_gotcha">Leave this field empty</label>
+            <input type="text" id="_gotcha" name="_gotcha" tabindex="-1" autocomplete="off">
+          </div>
+          <input type="hidden" name="_subject" value="New assessment request — TrustLayer Security">
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="submitBtn">Send request</button>
+            <span class="form-status" id="formStatus" role="alert"></span>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container footer-row">
+    <div class="footer-links">
+      <a href="services.html">Services</a>
+      <a href="sample-report.html">Sample Report</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <p class="footer-meta"><a href="mailto:contact@trustlayersecurity.com">contact@trustlayersecurity.com</a> &nbsp;·&nbsp; Authorized use only &nbsp;·&nbsp; © 2026 TrustLayer Security</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var menuBtn = document.getElementById('menuBtn');
+  var navLinks = document.querySelector('.nav-links');
+  if (menuBtn && navLinks) {
+    menuBtn.addEventListener('click', function () {
+      var open = navLinks.classList.toggle('mobile-open');
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+
+  var form = document.getElementById('contactForm');
+  var submitBtn = document.getElementById('submitBtn');
+  var status = document.getElementById('formStatus');
+  var card = document.getElementById('formCard');
+
+  if (!form) return;
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    if (!form.reportValidity()) return;
+
+    status.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.setAttribute('aria-busy', 'true');
+    submitBtn.textContent = 'Sending…';
+
+    fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    }).then(function (response) {
+      if (response.ok) {
+        card.innerHTML =
+          '<div class="form-success">' +
+          '<h3>Thanks — your request is in.</h3>' +
+          '<p>I\'ll take a look and get back to you at the email you provided.</p>' +
+          '</div>';
+      } else {
+        throw new Error('Formspree responded with an error');
+      }
+    }).catch(function () {
+      submitBtn.disabled = false;
+      submitBtn.removeAttribute('aria-busy');
+      submitBtn.textContent = 'Send request';
+      status.textContent = 'Something went wrong sending this — please try again, or email contact@trustlayersecurity.com directly.';
+    });
+  });
+
+  if (!('IntersectionObserver' in window)) return;
+  document.documentElement.classList.add('js-ready');
+
+  var els = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+</body>
+</html>

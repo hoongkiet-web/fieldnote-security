@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sample Report — TrustLayer Security</title>
+<meta name="description" content="See exactly what a TrustLayer Security report looks like — an anonymised excerpt from a real assessment run, covering DNS, ports, SSL/TLS, headers, and CVE findings.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="wordmark">Trust<span>Layer</span> Security</a>
+    <nav class="nav-links">
+      <a href="services.html">Services</a>
+      <a href="sample-report.html" aria-current="page">Sample Report</a>
+      <a href="about.html">About</a>
+      <a href="contact.html" class="btn btn-primary">Get Assessment</a>
+    </nav>
+    <button class="mobile-menu-btn" aria-label="Menu" aria-expanded="false" id="menuBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <section class="page-hero">
+    <div class="container">
+      <h1>What you actually receive</h1>
+      <p>Below is an anonymised excerpt from a real assessment run, in the same format every report ships in. Real findings, real severity ratings — target replaced with a placeholder domain.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="report-frame reveal">
+        <div class="report-titlebar">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span class="report-label">TrustLayer Security Report — example.com</span>
+        </div>
+
+        <div class="report-body">
+
+          <div class="stat-grid">
+            <div class="stat-card risk"><div class="value">47</div><div class="label">Risk Score /100</div></div>
+            <div class="stat-card"><div class="value" style="color:var(--accent)">8</div><div class="label">Open Ports</div></div>
+            <div class="stat-card"><div class="value" style="color:var(--sev-medium)">1</div><div class="label">SSL Issues</div></div>
+            <div class="stat-card"><div class="value" style="color:var(--sev-medium)">6</div><div class="label">Missing Headers</div></div>
+            <div class="stat-card"><div class="value" style="color:var(--sev-high)">0</div><div class="label">Sensitive Paths</div></div>
+            <div class="stat-card"><div class="value" style="color:#a855f7">0</div><div class="label">Subdomains</div></div>
+          </div>
+
+          <div class="report-section">
+            <h2>DNS Reconnaissance</h2>
+            <div class="report-section-body">
+              <table class="report-table">
+                <tr><th>Type</th><th>Value</th></tr>
+                <tr><td>A</td><td class="mono">104.20.23.154</td></tr>
+                <tr><td>A</td><td class="mono">172.66.147.243</td></tr>
+                <tr><td>NS</td><td class="mono">elliott.ns.cloudflare.com.</td></tr>
+                <tr><td>NS</td><td class="mono">hera.ns.cloudflare.com.</td></tr>
+                <tr><td>TXT</td><td class="mono">"v=spf1 -all"</td></tr>
+              </table>
+              <p class="report-empty ok">No subdomains discovered</p>
+            </div>
+          </div>
+
+          <div class="report-section">
+            <h2>Port Scan Results</h2>
+            <div class="report-section-body">
+              <table class="report-table">
+                <tr><th>Port</th><th>Service</th><th>Risk</th></tr>
+                <tr><td>25</td><td>SMTP</td><td><span class="badge badge-medium">MEDIUM</span></td></tr>
+                <tr><td>443</td><td>HTTPS</td><td><span class="badge badge-medium">MEDIUM</span></td></tr>
+                <tr><td>465</td><td>SMTPS</td><td><span class="badge badge-medium">MEDIUM</span></td></tr>
+                <tr><td>993</td><td>IMAPS</td><td><span class="badge badge-medium">MEDIUM</span></td></tr>
+              </table>
+              <p class="report-caption">8 ports total detected open — 4 shown above.</p>
+            </div>
+          </div>
+
+          <div class="report-section">
+            <h2>SSL/TLS Analysis</h2>
+            <div class="report-section-body">
+              <table class="report-table">
+                <tr><th>Property</th><th>Value</th></tr>
+                <tr><td>Protocol</td><td class="mono">TLSv1.3</td></tr>
+                <tr><td>Cipher Suite</td><td class="mono">TLS_AES_256_GCM_SHA384</td></tr>
+                <tr><td>Self-Signed</td><td style="color:var(--sev-high)">YES</td></tr>
+              </table>
+              <table class="report-table" style="margin-top:12px;">
+                <tr><th>Severity</th><th>Finding</th></tr>
+                <tr><td><span class="badge badge-high">HIGH</span></td><td>Self-signed certificate — not trusted by browsers</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="report-section">
+            <h2>Web Security Headers</h2>
+            <div class="report-section-body">
+              <table class="report-table">
+                <tr><th>Missing Header</th><th>Severity</th><th>Recommendation</th></tr>
+                <tr><td class="mono">Strict-Transport-Security</td><td><span class="badge badge-high">HIGH</span></td><td>max-age=31536000; includeSubDomains; preload</td></tr>
+                <tr><td class="mono">Content-Security-Policy</td><td><span class="badge badge-high">HIGH</span></td><td>Define a strict CSP to prevent XSS and injection.</td></tr>
+                <tr><td class="mono">X-Frame-Options</td><td><span class="badge badge-medium">MEDIUM</span></td><td>X-Frame-Options: DENY</td></tr>
+                <tr><td class="mono">Referrer-Policy</td><td><span class="badge badge-low">LOW</span></td><td>strict-origin-when-cross-origin</td></tr>
+              </table>
+              <p class="report-empty ok" style="margin-top:12px;">No sensitive paths found</p>
+            </div>
+          </div>
+
+          <div class="report-section">
+            <h2>CVE Lookup (NVD)</h2>
+            <div class="report-section-body">
+              <p class="report-empty">No CVEs identified from detected service banners.</p>
+            </div>
+          </div>
+
+          <p class="report-caption">This is a real, anonymised excerpt — target domain and identifying values replaced with a placeholder. Your report covers every finding, not just the excerpt shown here.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div class="container">
+      <h2>Want to see this run against your own domain?</h2>
+      <a href="contact.html" class="btn btn-primary">Request an assessment</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container footer-row">
+    <div class="footer-links">
+      <a href="services.html">Services</a>
+      <a href="sample-report.html">Sample Report</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <p class="footer-meta"><a href="mailto:contact@trustlayersecurity.com">contact@trustlayersecurity.com</a> &nbsp;·&nbsp; Authorized use only &nbsp;·&nbsp; © 2026 TrustLayer Security</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var menuBtn = document.getElementById('menuBtn');
+  var navLinks = document.querySelector('.nav-links');
+  if (menuBtn && navLinks) {
+    menuBtn.addEventListener('click', function () {
+      var open = navLinks.classList.toggle('mobile-open');
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+
+  if (!('IntersectionObserver' in window)) return;
+  document.documentElement.classList.add('js-ready');
+
+  var els = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+</body>
+</html>

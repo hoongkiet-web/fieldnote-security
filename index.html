@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrustLayer Security — Vulnerability assessments, reviewed by a human</title>
+<meta name="description" content="I run the scan and review every finding myself before you see it. Vulnerability assessments for startups and small dev teams, from a security analyst with 9+ years in enterprise production environments.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<!--
+THESIS: Prove the manual-review differentiator in the first viewport by
+showing the difference — raw scan output beside the same finding after
+expert review — instead of claiming "not just a scanner" in prose.
+OWN-WORLD: Inherited from the working VulnAssess/TrustLayer CLI report: near-black
+navy (#0f172a), slate cards (#1e293b), sky-blue accent (#38bdf8), severity
+colors reserved for real findings. Space Grotesk display, Inter body,
+IBM Plex Mono for domains/data/CLI-adjacent labels.
+STORY: A skeptical technical founder sees raw scan noise turned into
+prioritized signal in one glance, confirms the operator is real and
+qualified via credentials, and submits their domain.
+FIRST VIEWPORT: Nav + headline/subhead, then a two-panel raw-vs-reviewed
+comparison card built from the report's own components, then primary CTA.
+FORM: Split scan-vs-review contrast structure, candidate 5 of 7 grounded
+structures, seed key 5ec915e0.
+FINISH: unreviewed and undocumented is unfinished; this build ends with
+the finish review, the verdict, and DESIGN.md.
+-->
+
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="wordmark">Trust<span>Layer</span> Security</a>
+    <nav class="nav-links">
+      <a href="services.html">Services</a>
+      <a href="sample-report.html">Sample Report</a>
+      <a href="about.html">About</a>
+      <a href="contact.html" class="btn btn-primary">Get Assessment</a>
+    </nav>
+    <button class="mobile-menu-btn" aria-label="Menu" aria-expanded="false" id="menuBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-copy">
+        <h1>A vulnerability report a scanner <em>can't</em> write.</h1>
+        <p class="hero-sub">
+          I run the full scan — DNS recon, port scan, SSL/TLS, headers, sensitive
+          paths, CVE lookup — then review every finding myself before it reaches
+          you. 9+ years in enterprise production environments, Cisco-certified,
+          MSc Cyber Security in progress.
+        </p>
+        <div class="hero-cta-row">
+          <a href="contact.html" class="btn btn-primary">Request an assessment</a>
+          <a href="sample-report.html" class="btn btn-ghost">See a sample report</a>
+        </div>
+        <p class="hero-note">No self-service scanning — you submit your domain, I do the work, you get a reviewed report back.</p>
+      </div>
+
+      <div class="compare" id="compare">
+        <div class="compare-col raw">
+          <h3>Raw scan output</h3>
+
+          <div class="finding-row">
+            <span class="mono">PORT 443 — HTTPS — OPEN</span>
+          </div>
+          <div class="finding-row">
+            <span class="mono">HEADER MISSING: Content-Security-Policy</span>
+          </div>
+          <div class="finding-row">
+            <span class="mono">SUBDOMAINS FOUND: 3</span>
+          </div>
+          <div class="finding-row">
+            <span class="mono">CERT: SELF-SIGNED</span>
+          </div>
+        </div>
+
+        <div class="compare-col reviewed" id="reviewedCol">
+          <h3>After manual review</h3>
+
+          <div class="finding-row">
+            <div class="finding-top"><span class="badge badge-low">LOW</span></div>
+            <p class="finding-note">443 open is expected for HTTPS — worth confirming your TLS config below, not urgent on its own.</p>
+          </div>
+          <div class="finding-row">
+            <div class="finding-top"><span class="badge badge-high">HIGH</span></div>
+            <p class="finding-note">No CSP means one XSS bug becomes a full page takeover. Fix before you handle user data.</p>
+          </div>
+          <div class="finding-row">
+            <div class="finding-top"><span class="badge badge-medium">MEDIUM</span></div>
+            <p class="finding-note"><span class="mono">staging.</span> is publicly reachable — confirm it isn't running last month's code.</p>
+          </div>
+          <div class="finding-row">
+            <div class="finding-top"><span class="badge badge-high">HIGH</span></div>
+            <p class="finding-note">Self-signed cert on a public endpoint — browsers flag you as untrusted, kills conversion.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="credentials tight">
+    <div class="container">
+      <ul class="credentials-list">
+        <li>9+ years enterprise production &amp; QA — Sky (Sky Q, Sky Mobile, sky.com) and BT</li>
+        <li>Cisco CyberOps Associate</li>
+        <li>Cisco Certified Ethical Hacker</li>
+        <li>MSc Cyber Security — Open University, in progress</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="how-it-works">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>How it works</h2>
+        <p>No dashboard, no self-service scan trigger. Three steps, one person doing the work.</p>
+      </div>
+
+      <div class="steps reveal">
+        <div class="step">
+          <div class="step-index">01</div>
+          <h3>Send me your domain</h3>
+          <p>Fill in the intake form with your domain and a bit of context on your stack — takes under two minutes.</p>
+        </div>
+        <div class="step">
+          <div class="step-index">02</div>
+          <h3>I run the full assessment</h3>
+          <p>DNS reconnaissance &amp; subdomain enumeration, port scanning, SSL/TLS analysis, header and sensitive path checks, CVE lookup — then I review the output myself.</p>
+        </div>
+        <div class="step">
+          <div class="step-index">03</div>
+          <h3>You get a prioritized report</h3>
+          <p>Not a raw tool dump. Findings ranked by real-world risk, explained in plain English, with what to fix first.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container">
+      <div class="teaser reveal">
+        <div class="teaser-body">
+          <h3>See exactly what you'll get</h3>
+          <p>A real report, generated by the same scanner I use for every engagement — dark, clean, and built to hand straight to your team or investors.</p>
+          <a href="sample-report.html" class="btn btn-ghost">View a sample report</a>
+        </div>
+        <div class="teaser-visual" aria-hidden="true">
+          <div class="mock-bar"><span></span><span></span><span></span></div>
+          <div class="mock-body">
+            <div class="mock-line w-60" style="height:16px;"></div>
+            <div class="mock-line w-40" style="margin-top:6px;"></div>
+            <div class="mock-stat"><b>47</b><i>Risk Score</i></div>
+            <div class="mock-stat"><b>6</b><i>Missing Headers</i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="teaser-gap"></div>
+
+      <div class="teaser reverse reveal">
+        <div class="teaser-body">
+          <h3>Who's behind the report</h3>
+          <p>Not an agency, not a bot. A named analyst with 9+ years in enterprise QA and production environments, security certifications, and an active MSc — reviewing your findings personally.</p>
+          <a href="about.html" class="btn btn-ghost">Read the full background</a>
+        </div>
+        <div class="teaser-visual" aria-hidden="true">
+          <div class="mock-bar"><span></span><span></span><span></span></div>
+          <div class="mock-body">
+            <div class="mock-line w-80"></div>
+            <div class="mock-line w-60"></div>
+            <div class="mock-line w-40"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div class="container">
+      <h2>Know what's actually exposed, before someone else finds it.</h2>
+      <a href="contact.html" class="btn btn-primary">Request an assessment</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container footer-row">
+    <div class="footer-links">
+      <a href="services.html">Services</a>
+      <a href="sample-report.html">Sample Report</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <p class="footer-meta"><a href="mailto:contact@trustlayersecurity.com">contact@trustlayersecurity.com</a> &nbsp;·&nbsp; Authorized use only &nbsp;·&nbsp; © 2026 TrustLayer Security</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var menuBtn = document.getElementById('menuBtn');
+  var navLinks = document.querySelector('.nav-links');
+  if (menuBtn && navLinks) {
+    menuBtn.addEventListener('click', function () {
+      var open = navLinks.classList.toggle('mobile-open');
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  }
+
+  if (!('IntersectionObserver' in window)) return;
+  document.documentElement.classList.add('js-ready');
+
+  var els = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+</body>
+</html>
