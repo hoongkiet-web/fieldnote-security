@@ -15,6 +15,7 @@
     <nav class="nav-links">
       <a href="services.html">Services</a>
       <a href="sample-report.html">Sample Report</a>
+      <a href="gdpr-checker.html">GDPR Checker</a>
       <a href="about.html">About</a>
       <a href="contact.html" class="btn btn-primary" aria-current="page">Get Assessment</a>
     </nav>
@@ -63,6 +64,16 @@
           </div>
 
           <div class="field">
+            <label for="service">Which service are you interested in?</label>
+            <select id="service" name="service" required>
+              <option value="" disabled selected>Select one…</option>
+              <option value="Vulnerability Assessment">Vulnerability Assessment</option>
+              <option value="GDPR Compliance Check">GDPR Compliance Check</option>
+              <option value="Both">Both</option>
+            </select>
+          </div>
+
+          <div class="field">
             <label for="message">Message</label>
             <textarea id="message" name="message" placeholder="Tell me a bit about your site or stack and what you'd like the assessment to focus on." required></textarea>
           </div>
@@ -91,6 +102,7 @@
     <div class="footer-links">
       <a href="services.html">Services</a>
       <a href="sample-report.html">Sample Report</a>
+      <a href="gdpr-checker.html">GDPR Checker</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
     </div>

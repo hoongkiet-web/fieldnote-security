@@ -44,12 +44,21 @@ Extends the same token system with a `.form-card` component (dark card, same rad
 
 All three inherit the existing token system, no new palette:
 
-- **Services** — `.phase-list`/`.phase-row`, a single-column list (not the homepage's 3-up `.steps` grid) describing the real 6-phase pipeline from `vuln_assess.py` (DNS → ports → SSL/TLS → headers/paths → CVE → manual review). Phase numbers are kept because they reflect the tool's real, literal execution order, not decoration. `.process-strip` and `.pull-statement` (accent `border-left`, echoing the report's own section-header convention) reinforce positioning briefly rather than re-explaining the homepage's "How it works" at length.
+- **Services** — `.phase-list`/`.phase-row`, a single-column list (not the homepage's 3-up `.steps` grid) describing the real 6-phase pipeline from `trustlayer_scan.py` (renamed from `vuln_assess.py` 2026-08-12; DNS → ports → SSL/TLS → headers/paths → CVE → manual review). Phase numbers are kept because they reflect the tool's real, literal execution order, not decoration. `.process-strip` and `.pull-statement` (accent `border-left`, echoing the report's own section-header convention) reinforce positioning briefly rather than re-explaining the homepage's "How it works" at length.
 - **Sample Report** — `.report-frame`/`.report-section`/`.stat-grid` recreate the real shipped report's own component system (stat cards, section headers with accent `border-left`, tables) using real values pulled from the actual `example.com` sample run in `cybersec-agency/reports/`, not invented data. Re-labeled to the current brand in the title bar; the underlying report file itself was intentionally left unrenamed (see PRODUCT.md).
 - **About** — text-first (no fabricated headshot/photo — none exists), `.credential-detail` list. Uses the user's real job title and the verified "300+ releases a year" metric, consistent with confirmed background facts.
 
 Also caught during this pass: `.field input::placeholder` / `.field textarea::placeholder` were using `--text-muted` (~3.75:1 on the field background), under the craft-floor's placeholder-text floor. Fixed to `--text-secondary`, matching the same class of bug fixed on the homepage.
 
+## GDPR Checker page + contact form service selector (built 2026-08-12)
+
+Second service line, added as a pure extension — no new components, palette, or layout patterns, per explicit instruction:
+
+- **`gdpr-checker.html`** reuses `.page-hero`, `.phase-list`/`.phase-row` (3 phases instead of services.html's 6: Technical Scan, Data Practices Questionnaire, Manual Review), `.process-strip`, `.pull-statement`, and `.final-cta` verbatim from services.html's pattern.
+- Added to nav + footer on all six pages, ordered Services → Sample Report → GDPR Checker → About → Contact.
+- **Contact form** gained a required `<select name="service">` (Vulnerability Assessment / GDPR Compliance Check / Both) between Website URL and Message. Styled by folding `select` into the existing `.field input, .field textarea` rule rather than a new component; the unselected placeholder option is dimmed via `.field select:invalid` to echo (not duplicate) the existing placeholder-text treatment. No change to submit/thank-you/error logic.
+- PRODUCT.md updated: Product Purpose/Positioning/Operating Context now cover two service lines; the GDPR data-practices questionnaire itself is described on-page but not yet built as an on-site form (delivered by the operator after intake until/unless requested as a dedicated page).
+
 ## Open for future pages
 
-All five brief-required pages are now built. Any further pages should inherit this token system and component set rather than open a new visual-world decision.
+Six pages are now built (Homepage, Services, Sample Report, GDPR Checker, Contact, About). Any further pages or services should inherit this token system and component set rather than open a new visual-world decision.

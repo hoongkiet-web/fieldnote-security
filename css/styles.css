@@ -768,7 +768,8 @@ section.tight { padding: 40px 0; }
 }
 
 .field input,
-.field textarea {
+.field textarea,
+.field select {
   width: 100%;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -781,9 +782,11 @@ section.tight { padding: 40px 0; }
 }
 .field input::placeholder,
 .field textarea::placeholder { color: var(--text-secondary); }
+.field select:invalid { color: var(--text-secondary); }
 
 .field input:focus-visible,
-.field textarea:focus-visible {
+.field textarea:focus-visible,
+.field select:focus-visible {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-dim);
