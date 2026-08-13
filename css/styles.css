@@ -106,7 +106,7 @@ h1, h2, h3 {
 
 .nav-links {
   display: none;
-  gap: 32px;
+  gap: 22px;
   align-items: center;
 }
 
@@ -179,7 +179,7 @@ h1, h2, h3 {
 .nav-links.mobile-open a { padding: 10px 0; width: 100%; }
 .nav-links.mobile-open a.btn { width: auto; margin-top: 8px; }
 
-@media (min-width: 860px) {
+@media (min-width: 1100px) {
   .nav-links { display: flex; }
   .nav-links.mobile-open {
     position: static;

@@ -79,6 +79,17 @@ The design detector flagged 5 findings after the Email Security build:
 
 **Overflow check requested for the mono changes**: found `.report-section-body` (wrapping every sample-report table) had no horizontal-overflow protection at all - a pre-existing gap, not new from this swap, but exactly what the check was for. Added `overflow-x: auto` so a table that can't fit 375px scrolls within its frame instead of breaking page width. The specific font-swap changes (short numbers, port digits) aren't wide enough to be the actual risk; the headers table's long "Recommendation" text is the more likely trigger, and is now protected by the same fix.
 
+## Accessibility Checker page + nav breakpoint fix (built 2026-08-12)
+
+Fourth service line, same extension pattern as GDPR Checker and Email Security:
+
+- **`accessibility-checker.html`** reuses the identical `.page-hero` / 3-row `.phase-list` (Automated Accessibility Scan, Manual Usability Review, Prioritized Report) / `.process-strip` / `.pull-statement` / `.final-cta` pattern.
+- Added to nav + footer on all eight pages. Nav label shortened to "Accessibility" (not "Accessibility Checker") to help with nav width, ordered Services -> Sample Report -> GDPR Checker -> Email Security -> Accessibility -> About -> Contact.
+- **Contact form** gained a fourth checkbox, "Accessibility Check", in the same `.checkbox-group` - no new markup pattern.
+- PRODUCT.md updated: four service lines now; added a note that the site itself has more reason to hold a real accessibility bar now that it sells accessibility audits.
+
+**Nav overflow fix, found before it shipped broken**: with a 4th service page the desktop nav-links (Services, Sample Report, GDPR Checker, Email Security, Accessibility, About, + CTA button) estimated to roughly 1016px wide against a `min-width: 860px` breakpoint that used to be safe with fewer items - close enough to overflow/wrap on real mid-size laptop windows (860-1050px). Raised the nav-links breakpoint to `1100px` and tightened `.nav-links` gap from 32px to 22px; below that width the existing hamburger menu (already built, already tested) handles it. This is a threshold/spacing value change only, not a new component - the instruction to reuse the established pattern doesn't cover shipping a pattern that's quietly started to overflow. PRODUCT.md now flags that a fifth service line should re-check this threshold rather than assume it still fits.
+
 ## Open for future pages
 
-Seven pages are now built (Homepage, Services, Sample Report, GDPR Checker, Email Security, Contact, About). Any further pages or services should inherit this token system and component set rather than open a new visual-world decision.
+Eight pages are now built (Homepage, Services, Sample Report, GDPR Checker, Email Security, Accessibility Checker, Contact, About). Any further pages or services should inherit this token system and component set rather than open a new visual-world decision - and should re-check the nav-links breakpoint (see above) before adding a 6th nav item.
