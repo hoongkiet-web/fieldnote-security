@@ -233,68 +233,7 @@ h1, h2, h3 {
   color: var(--text-secondary);
 }
 
-/* ---------- comparison panel ---------- */
-
-.compare {
-  margin-top: 48px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.compare-col {
-  background: var(--bg-elevated);
-  padding: 20px;
-}
-
-.compare-col h3 {
-  font-family: var(--font-body);
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-secondary);
-  margin-bottom: 16px;
-}
-
-.compare-col.reviewed h3 { color: var(--accent); }
-
-.finding-row {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-subtle);
-}
-.finding-row:last-child { border-bottom: none; }
-
-.compare-col.raw .finding-row {
-  color: var(--text-secondary);
-}
-
-.compare-col.reviewed .finding-row {
-  animation: findingIn 500ms var(--ease-out) backwards;
-}
-.compare-col.reviewed .finding-row:nth-child(1) { animation-delay: 300ms; }
-.compare-col.reviewed .finding-row:nth-child(2) { animation-delay: 380ms; }
-.compare-col.reviewed .finding-row:nth-child(3) { animation-delay: 460ms; }
-.compare-col.reviewed .finding-row:nth-child(4) { animation-delay: 540ms; }
-
-@keyframes findingIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.finding-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+/* ---------- badges (shared: sample report) ---------- */
 
 .badge {
   display: inline-flex;
@@ -311,14 +250,36 @@ h1, h2, h3 {
 .badge-medium { background: var(--sev-medium); }
 .badge-low { background: var(--sev-low); }
 
-.finding-note {
-  font-size: 0.88rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+/* ---------- what I check (service grid) ---------- */
+
+.service-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-@media (min-width: 720px) {
-  .compare { grid-template-columns: 1fr 1fr; }
+.service-card {
+  display: block;
+  background: var(--bg-elevated);
+  padding: 24px;
+  color: var(--text-primary);
+  transition: background 160ms ease;
+}
+.service-card:hover { background: var(--bg-elevated-hover); text-decoration: none; }
+
+.service-card h3 { font-size: 1.05rem; margin-bottom: 8px; }
+.service-card p { color: var(--text-secondary); font-size: 0.9rem; }
+
+@media (min-width: 640px) {
+  .service-grid { grid-template-columns: repeat(2, 1fr); }
+  .service-grid .service-card:last-child { grid-column: span 2; }
+}
+@media (min-width: 960px) {
+  .service-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ---------- section shell ---------- */
@@ -898,9 +859,6 @@ footer {
   .js-ready .reveal {
     transition-duration: 1ms;
     transform: none;
-  }
-  .compare-col.reviewed .finding-row {
-    animation: none;
   }
   html { scroll-behavior: auto; }
 }

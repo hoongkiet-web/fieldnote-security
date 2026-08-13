@@ -3,29 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TrustLayer Security - Vulnerability assessments, reviewed by a human</title>
-<meta name="description" content="I run the scan and review every finding myself before you see it. Vulnerability assessments for startups and small dev teams, from a security analyst with 9+ years in enterprise production environments.">
+<title>TrustLayer Security - Five ways to find out what's actually wrong</title>
+<meta name="description" content="Security vulnerabilities, compliance gaps, email spoofing risk, accessibility issues, third-party exposure - scanned, reviewed personally, and reported in plain English. From a security analyst with 9+ years in enterprise production environments.">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<!--
-THESIS: Prove the manual-review differentiator in the first viewport by
-showing the difference - raw scan output beside the same finding after
-expert review - instead of claiming "not just a scanner" in prose.
-OWN-WORLD: Inherited from the working VulnAssess/TrustLayer CLI report: near-black
-navy (#0f172a), slate cards (#1e293b), sky-blue accent (#38bdf8), severity
-colors reserved for real findings. IBM Plex Sans display, Inter body,
-IBM Plex Mono for domains/data/CLI-adjacent labels.
-STORY: A skeptical technical founder sees raw scan noise turned into
-prioritized signal in one glance, confirms the operator is real and
-qualified via credentials, and submits their domain.
-FIRST VIEWPORT: Nav + headline/subhead, then a two-panel raw-vs-reviewed
-comparison card built from the report's own components, then primary CTA.
-FORM: Split scan-vs-review contrast structure, candidate 5 of 7 grounded
-structures, seed key 5ec915e0.
-FINISH: unreviewed and undocumented is unfinished; this build ends with
-the finish review, the verdict, and DESIGN.md.
--->
 
 <header class="site-header">
   <div class="container nav-row">
@@ -53,12 +35,12 @@ the finish review, the verdict, and DESIGN.md.
   <section class="hero">
     <div class="container">
       <div class="hero-copy">
-        <h1>A vulnerability report a scanner <em>can't</em> write.</h1>
+        <h1>One person, five ways to find out what's actually wrong.</h1>
         <p class="hero-sub">
-          I run the full scan - DNS recon, port scan, SSL/TLS, headers, sensitive
-          paths, CVE lookup - then review every finding myself before it reaches
-          you. 9+ years in enterprise production environments, Cisco-certified,
-          MSc Cyber Security in progress.
+          Security vulnerabilities, compliance gaps, email spoofing risk,
+          accessibility issues, third-party exposure - scanned, reviewed
+          personally, and reported in plain English. No dashboards, no
+          self-service tools, no automated scores.
         </p>
         <div class="hero-cta-row">
           <a href="contact.html" class="btn btn-primary">Request an assessment</a>
@@ -66,45 +48,37 @@ the finish review, the verdict, and DESIGN.md.
         </div>
         <p class="hero-note">No self-service scanning - you submit your domain, I do the work, you get a reviewed report back.</p>
       </div>
+    </div>
+  </section>
 
-      <div class="compare" id="compare">
-        <div class="compare-col raw">
-          <h3>Raw scan output</h3>
+  <section>
+    <div class="container">
+      <div class="section-head reveal">
+        <h2>What I check</h2>
+        <p>Five services, the same manual review behind every one.</p>
+      </div>
 
-          <div class="finding-row">
-            <span class="mono">PORT 443 - HTTPS - OPEN</span>
-          </div>
-          <div class="finding-row">
-            <span class="mono">HEADER MISSING: Content-Security-Policy</span>
-          </div>
-          <div class="finding-row">
-            <span class="mono">SUBDOMAINS FOUND: 3</span>
-          </div>
-          <div class="finding-row">
-            <span class="mono">CERT: SELF-SIGNED</span>
-          </div>
-        </div>
-
-        <div class="compare-col reviewed" id="reviewedCol">
-          <h3>After manual review</h3>
-
-          <div class="finding-row">
-            <div class="finding-top"><span class="badge badge-low">LOW</span></div>
-            <p class="finding-note">443 open is expected for HTTPS - worth confirming your TLS config below, not urgent on its own.</p>
-          </div>
-          <div class="finding-row">
-            <div class="finding-top"><span class="badge badge-high">HIGH</span></div>
-            <p class="finding-note">No CSP means one XSS bug becomes a full page takeover. Fix before you handle user data.</p>
-          </div>
-          <div class="finding-row">
-            <div class="finding-top"><span class="badge badge-medium">MEDIUM</span></div>
-            <p class="finding-note"><span class="mono">staging.</span> is publicly reachable - confirm it isn't running last month's code.</p>
-          </div>
-          <div class="finding-row">
-            <div class="finding-top"><span class="badge badge-high">HIGH</span></div>
-            <p class="finding-note">Self-signed cert on a public endpoint - browsers flag you as untrusted, kills conversion.</p>
-          </div>
-        </div>
+      <div class="service-grid reveal">
+        <a href="services.html" class="service-card">
+          <h3>Vulnerability Assessment</h3>
+          <p>DNS, ports, SSL/TLS, headers, and known CVEs against your domain</p>
+        </a>
+        <a href="gdpr-checker.html" class="service-card">
+          <h3>GDPR Compliance Check</h3>
+          <p>Cookie consent, tracking, privacy policy, and data-handling practices</p>
+        </a>
+        <a href="email-security.html" class="service-card">
+          <h3>Email Security Check</h3>
+          <p>SPF, DKIM, and DMARC - whether your domain can be spoofed</p>
+        </a>
+        <a href="accessibility-checker.html" class="service-card">
+          <h3>Accessibility Check</h3>
+          <p>WCAG scan plus manual usability review</p>
+        </a>
+        <a href="third-party-audit.html" class="service-card">
+          <h3>Third-Party Script Audit</h3>
+          <p>Everything loading on your site, and what it's actually doing</p>
+        </a>
       </div>
     </div>
   </section>
