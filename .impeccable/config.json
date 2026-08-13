@@ -8,6 +8,15 @@
         "value": "inter",
         "createdAt": "2026-08-12T21:24:01.884Z",
         "reason": "User confirmed inter is intentional"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "css/styles.css"
+        ],
+        "createdAt": "2026-08-13T11:11:22.446Z",
+        "reason": "Pre-existing, reviewed prior session (2026-08-12) - literal reproductions of the real shipped scanner report's .stat-card/.report-section h2 components (mock-stat, report-body .stat-card, report-section h2), not AI-invented decoration; user confirmed 2026-08-13 to persist this decision"
       }
     ]
   }
