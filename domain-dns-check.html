@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Services - TrustLayer Security</title>
-<meta name="description" content="What's included in a TrustLayer Security vulnerability assessment: DNS reconnaissance, port scanning, SSL/TLS analysis, header and sensitive path checks, CVE lookup - every result reviewed by hand before it reaches you.">
+<title>Domain & DNS Health Check - TrustLayer Security</title>
+<meta name="description" content="A DNS health check plus a snapshot of what's reachable from the outside - the entry point for understanding your exposure, reviewed by a person, not just an automated scan.">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -13,13 +13,13 @@
   <div class="container nav-row">
     <a href="index.html" class="wordmark">Trust<span>Layer</span> Security</a>
     <nav class="nav-links">
-      <a href="services.html" aria-current="page">Services</a>
+      <a href="services.html">Services</a>
       <a href="sample-report.html">Sample Report</a>
       <a href="gdpr-checker.html">GDPR Checker</a>
       <a href="email-security.html">Email Security</a>
       <a href="accessibility-checker.html">Accessibility</a>
       <a href="third-party-audit.html">Script Audit</a>
-      <a href="domain-dns-check.html">DNS Check</a>
+      <a href="domain-dns-check.html" aria-current="page">DNS Check</a>
       <a href="about.html">About</a>
       <a href="contact.html" class="btn btn-primary">Get Assessment</a>
     </nav>
@@ -35,42 +35,30 @@
 
   <section class="page-hero">
     <div class="container">
-      <h1>Six phases. One person reviewing every result.</h1>
-      <p>The scan itself is automated - the same tool runs the same checks every time. What you're paying for is the review that happens after it finishes.</p>
+      <h1>Is your domain actually configured the way you think it is?</h1>
+      <p>A DNS health check plus a snapshot of what's reachable from the outside - the entry point for understanding your exposure.</p>
     </div>
   </section>
 
   <section>
     <div class="container">
       <div class="section-head reveal">
-        <h2>What a scan covers</h2>
-        <p>Every assessment runs the same six-phase pipeline against your domain.</p>
+        <h2>What it covers</h2>
+        <p>Three phases: a DNS health scan, an attack surface snapshot, and a manual review of both.</p>
       </div>
 
       <div class="phase-list reveal">
         <div class="phase-row">
-          <div><span class="phase-num">PHASE 01</span><h3>DNS Reconnaissance</h3></div>
-          <p>Full DNS record enumeration (A, AAAA, MX, NS, TXT, SOA) plus subdomain discovery - surfaces forgotten staging environments and services you didn't know were publicly resolvable.</p>
+          <div><span class="phase-num">PHASE 01</span><h3>DNS Health Scan</h3></div>
+          <p>Checks MX, A, NS, and TXT records for misconfigurations, dangling entries, and subdomain takeover risk.</p>
         </div>
         <div class="phase-row">
-          <div><span class="phase-num">PHASE 02</span><h3>Port Scanning</h3></div>
-          <p>Scans your common service ports, identifies what's listening, and risk-rates each open port - a database port or admin service exposed to the internet is treated differently to an expected 443.</p>
+          <div><span class="phase-num">PHASE 02</span><h3>Attack Surface Snapshot</h3></div>
+          <p>Identifies which ports and services are reachable from the internet, and what's exposed that shouldn't be.</p>
         </div>
         <div class="phase-row">
-          <div><span class="phase-num">PHASE 03</span><h3>SSL/TLS Analysis</h3></div>
-          <p>Certificate validity, expiry, protocol version, and cipher suite - flags self-signed certificates, weak protocols, and anything that would make a browser warn your visitors.</p>
-        </div>
-        <div class="phase-row">
-          <div><span class="phase-num">PHASE 04</span><h3>Web Security Headers &amp; Sensitive Paths</h3></div>
-          <p>Checks for six security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) and probes known-sensitive paths - <span class="mono">.env</span> files, exposed <span class="mono">.git</span> directories, backup dumps, admin panels, and API docs left open.</p>
-        </div>
-        <div class="phase-row">
-          <div><span class="phase-num">PHASE 05</span><h3>CVE Lookup</h3></div>
-          <p>Cross-references any service banners picked up during the scan against the National Vulnerability Database for known, published vulnerabilities.</p>
-        </div>
-        <div class="phase-row">
-          <div><span class="phase-num">PHASE 06</span><h3>Manual Review &amp; Report</h3></div>
-          <p>This is the part a scanner can't do. I go through every finding myself, drop what's noise, prioritize what's real, and write it up in plain English.</p>
+          <div><span class="phase-num">PHASE 03</span><h3>Manual Review</h3></div>
+          <p>Personal review of both, prioritized by what's misconfigured versus what's genuinely exposed.</p>
         </div>
       </div>
     </div>
@@ -84,9 +72,9 @@
       <div class="process-strip reveal">
         <strong>You submit your domain</strong>
         <span class="arrow">→</span>
-        <strong>I run the assessment &amp; review it myself</strong>
+        <strong>I run the scan and review it</strong>
         <span class="arrow">→</span>
-        <strong>You get a prioritized PDF report</strong>
+        <strong>You get a prioritized report of what's exposed and misconfigured</strong>
       </div>
     </div>
   </section>
@@ -94,7 +82,7 @@
   <section>
     <div class="container">
       <div class="pull-statement reveal">
-        <p>No self-service scanning. No dashboard. No account to manage. You send a domain, I send back a report - the manual review in the middle is the entire point.</p>
+        <p>Most domain misconfigurations sit quietly for years until something breaks - or someone finds them first.</p>
       </div>
     </div>
   </section>
