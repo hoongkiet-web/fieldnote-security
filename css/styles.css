@@ -278,7 +278,6 @@ h1, h2, h3 {
 
 @media (min-width: 640px) {
   .service-grid { grid-template-columns: repeat(2, 1fr); }
-  .service-grid .service-card:last-child { grid-column: span 2; }
 }
 @media (min-width: 960px) {
   .service-grid { grid-template-columns: repeat(3, 1fr); }
