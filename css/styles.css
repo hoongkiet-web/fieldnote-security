@@ -867,6 +867,13 @@ section.tight { padding: 40px 0; }
   margin-top: 18px;
 }
 
+.bundle-note {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  max-width: 34rem;
+  margin-top: 10px;
+}
+
 /* ---------- pricing ---------- */
 
 .pricing-grid {
