@@ -336,7 +336,7 @@ section.tight { padding: 40px 0; }
   .credentials-list { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 960px) {
-  .credentials-list { grid-template-columns: repeat(4, 1fr); }
+  .credentials-list { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ---------- how it works ---------- */
