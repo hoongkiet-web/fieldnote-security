@@ -20,6 +20,7 @@
       <a href="accessibility-checker.html">Accessibility</a>
       <a href="third-party-audit.html">Script Audit</a>
       <a href="domain-dns-check.html">DNS Check</a>
+      <a href="pricing.html">Pricing</a>
       <a href="about.html">About</a>
       <a href="contact.html" class="btn btn-primary" aria-current="page">Get Assessment</a>
     </nav>
@@ -131,6 +132,7 @@
       <a href="accessibility-checker.html">Accessibility</a>
       <a href="third-party-audit.html">Script Audit</a>
       <a href="domain-dns-check.html">DNS Check</a>
+      <a href="pricing.html">Pricing</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
     </div>
@@ -155,6 +157,25 @@
   var card = document.getElementById('formCard');
 
   if (!form) return;
+
+  // Pre-select service checkboxes from ?service=slug params, e.g. a
+  // pricing.html tier CTA linking to contact.html?service=vuln or
+  // contact.html?service=dns-health&service=email-security
+  var SERVICE_SLUG_TO_VALUE = {
+    'vuln': 'Vulnerability Assessment',
+    'dns-health': 'Domain & DNS Health Check',
+    'email-security': 'Email Security Check',
+    'script-audit': 'Third-Party Script Audit',
+    'gdpr': 'GDPR Compliance Check',
+    'accessibility': 'Accessibility Check'
+  };
+  var params = new URLSearchParams(window.location.search);
+  params.getAll('service').forEach(function (slug) {
+    var value = SERVICE_SLUG_TO_VALUE[slug];
+    if (!value) return;
+    var checkbox = form.querySelector('input[name="service"][value="' + value + '"]');
+    if (checkbox) checkbox.checked = true;
+  });
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
