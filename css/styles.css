@@ -826,6 +826,47 @@ section.tight { padding: 40px 0; }
   font-size: 0.95rem;
 }
 
+/* ---------- free-tier callout (homepage) ---------- */
+
+.free-callout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-left: 4px solid var(--accent);
+  border-radius: 14px;
+  padding: 26px 28px;
+}
+.free-callout h2 { font-size: 1.25rem; margin-bottom: 6px; }
+.free-callout p { color: var(--text-secondary); font-size: 0.96rem; max-width: 38rem; }
+.free-callout .btn { flex-shrink: 0; }
+
+@media (min-width: 720px) {
+  .free-callout {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+}
+
+/* ---------- pricing line badge (individual service pages) ---------- */
+
+.pricing-line {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  padding: 7px 14px;
+  border-radius: 8px;
+  margin-top: 18px;
+}
+
 /* ---------- pricing ---------- */
 
 .pricing-grid {
