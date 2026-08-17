@@ -339,6 +339,28 @@ section.tight { padding: 40px 0; }
   .credentials-list { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ---------- skill tags (credentials strip + about page certs) ---------- */
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
 /* ---------- how it works ---------- */
 
 .steps {
@@ -681,6 +703,26 @@ section.tight { padding: 40px 0; }
 .credential-row p {
   color: var(--text-secondary);
   font-size: 0.92rem;
+}
+
+.cert-block {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.cert-block:last-child { margin-bottom: 0; }
+.cert-block h3 {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.cert-block p {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  max-width: 42rem;
+  margin-bottom: 4px;
 }
 
 /* ---------- contact form ---------- */
