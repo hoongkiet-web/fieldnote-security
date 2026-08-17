@@ -361,6 +361,19 @@ section.tight { padding: 40px 0; }
   white-space: nowrap;
 }
 
+.cred-badge-link {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 4px;
+  line-height: 0;
+}
+.cred-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: block;
+}
+
 /* ---------- how it works ---------- */
 
 .steps {
@@ -722,7 +735,29 @@ section.tight { padding: 40px 0; }
   color: var(--text-secondary);
   font-size: 0.92rem;
   max-width: 42rem;
-  margin-bottom: 4px;
+  margin-bottom: 0;
+}
+
+.cert-block-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+.cert-badge-link {
+  flex-shrink: 0;
+  display: block;
+  transition: transform 160ms var(--ease-out);
+}
+.cert-badge-link:hover { transform: scale(1.04); }
+.cert-badge {
+  width: 88px;
+  height: 88px;
+  border-radius: 12px;
+  display: block;
+}
+@media (max-width: 480px) {
+  .cert-badge { width: 64px; height: 64px; }
 }
 
 /* ---------- contact form ---------- */
