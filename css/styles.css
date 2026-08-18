@@ -234,6 +234,7 @@ h1, h2, h3 {
   font-size: 0.82rem;
   color: var(--text-secondary);
 }
+.hero-note + .hero-note { margin-top: 6px; }
 
 /* ---------- badges (shared: sample report) ---------- */
 
