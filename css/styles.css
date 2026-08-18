@@ -492,6 +492,11 @@ section.tight { padding: 40px 0; }
   max-width: 30rem;
   margin-bottom: 22px;
 }
+.cta-subnote {
+  margin-top: 16px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
 
 /* ---------- generic sub-page hero ---------- */
 
@@ -760,6 +765,54 @@ section.tight { padding: 40px 0; }
   .cert-badge { width: 64px; height: 64px; }
 }
 
+/* ---------- legal pages (privacy / terms) ---------- */
+
+.legal-body {
+  max-width: 42rem;
+}
+.legal-body h2 {
+  font-size: 1.3rem;
+  margin: 36px 0 14px;
+}
+.legal-body h2:first-child { margin-top: 0; }
+.legal-body p {
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+  margin-bottom: 14px;
+}
+.legal-body ul {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+}
+.legal-body li {
+  color: var(--text-secondary);
+  font-size: 0.98rem;
+  padding-left: 20px;
+  position: relative;
+  margin-bottom: 8px;
+}
+.legal-body li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.legal-body strong { color: var(--text-primary); font-weight: 600; }
+.legal-updated {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 28px;
+}
+.legal-placeholder {
+  color: var(--sev-medium);
+  font-weight: 600;
+}
+
 /* ---------- contact form ---------- */
 
 .contact-hero {
@@ -794,6 +847,12 @@ section.tight { padding: 40px 0; }
   font-size: 0.85rem;
   color: var(--text-secondary);
   margin-bottom: 24px;
+}
+
+.form-legal-note {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 16px;
 }
 
 .field { margin-bottom: 20px; }
