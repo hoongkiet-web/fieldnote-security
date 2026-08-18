@@ -19,10 +19,10 @@
       <a href="email-security.html">Email Security</a>
       <a href="accessibility-checker.html">Accessibility</a>
       <a href="third-party-audit.html">Script Audit</a>
-      <a href="domain-dns-check.html">DNS Check</a>
+      <a href="domain-dns-check.html">DNS Checker</a>
       <a href="pricing.html">Pricing</a>
       <a href="about.html">About</a>
-      <a href="contact.html" class="btn btn-primary" aria-current="page">Get Assessment</a>
+      <a href="contact.html" class="btn btn-primary" aria-current="page">Request an assessment</a>
     </nav>
     <button class="mobile-menu-btn" aria-label="Menu" aria-expanded="false" id="menuBtn">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -76,24 +76,24 @@
                 Vulnerability Assessment
               </label>
               <label class="checkbox-option">
-                <input type="checkbox" name="service" value="GDPR Compliance Check">
-                GDPR Compliance Check
+                <input type="checkbox" name="service" value="GDPR Compliance Checker">
+                GDPR Compliance Checker
               </label>
               <label class="checkbox-option">
-                <input type="checkbox" name="service" value="Email Security Check">
-                Email Security Check
+                <input type="checkbox" name="service" value="Email Security Checker">
+                Email Security Checker
               </label>
               <label class="checkbox-option">
-                <input type="checkbox" name="service" value="Accessibility Check">
-                Accessibility Check
+                <input type="checkbox" name="service" value="Accessibility Checker">
+                Accessibility Checker
               </label>
               <label class="checkbox-option">
                 <input type="checkbox" name="service" value="Third-Party Script Audit">
                 Third-Party Script Audit
               </label>
               <label class="checkbox-option">
-                <input type="checkbox" name="service" value="Domain &amp; DNS Health Check">
-                Domain &amp; DNS Health Check
+                <input type="checkbox" name="service" value="Domain &amp; DNS Health Checker">
+                Domain &amp; DNS Health Checker
               </label>
             </div>
           </fieldset>
@@ -133,7 +133,7 @@
       <a href="email-security.html">Email Security</a>
       <a href="accessibility-checker.html">Accessibility</a>
       <a href="third-party-audit.html">Script Audit</a>
-      <a href="domain-dns-check.html">DNS Check</a>
+      <a href="domain-dns-check.html">DNS Checker</a>
       <a href="pricing.html">Pricing</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
@@ -167,11 +167,11 @@
   // contact.html?service=dns-health&service=email-security
   var SERVICE_SLUG_TO_VALUE = {
     'vuln': 'Vulnerability Assessment',
-    'dns-health': 'Domain & DNS Health Check',
-    'email-security': 'Email Security Check',
+    'dns-health': 'Domain & DNS Health Checker',
+    'email-security': 'Email Security Checker',
     'script-audit': 'Third-Party Script Audit',
-    'gdpr': 'GDPR Compliance Check',
-    'accessibility': 'Accessibility Check'
+    'gdpr': 'GDPR Compliance Checker',
+    'accessibility': 'Accessibility Checker'
   };
   var params = new URLSearchParams(window.location.search);
   params.getAll('service').forEach(function (slug) {
