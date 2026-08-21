@@ -64,7 +64,7 @@
       '<textarea class="fns-chat-input" id="fnsChatInput" rows="1" maxlength="800" placeholder="Ask about services, pricing..." aria-label="Message"></textarea>' +
       '<button type="submit" class="fns-chat-send" id="fnsChatSend">Send</button>' +
     '</form>' +
-    '<p class="fns-chat-disclaimer">AI assistant, not a human - answers are general guidance, not a substitute for a full assessment.</p>';
+    '<p class="fns-chat-disclaimer">AI assistant, not a human - answers are general guidance, not legal advice and not a substitute for a full assessment.</p>';
 
   document.body.appendChild(btn);
   document.body.appendChild(panel);
