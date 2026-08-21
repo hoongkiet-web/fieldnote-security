@@ -64,6 +64,10 @@ body {
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
+/* Inline links within body copy need a non-color indicator to meet
+   WCAG 1.4.1 (accent-on-secondary-gray contrast is only ~1.19:1). */
+p a { text-decoration: underline; text-underline-offset: 2px; }
+
 h1, h2, h3 {
   font-family: var(--font-display);
   font-weight: 600;
