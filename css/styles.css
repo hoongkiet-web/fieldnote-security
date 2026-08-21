@@ -518,6 +518,9 @@ section.tight { padding: 40px 0; }
   max-width: 36rem;
   font-size: 1.02rem;
 }
+.page-hero p + p {
+  margin-top: 10px;
+}
 
 /* ---------- phase list (services) ---------- */
 
@@ -1058,6 +1061,31 @@ section.tight { padding: 40px 0; }
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-secondary);
+}
+
+.value-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 10px;
+}
+.value-tag {
+  display: inline-block;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.value-note {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: 0 0 14px;
 }
 
 .pricing-card .delivery-note {
