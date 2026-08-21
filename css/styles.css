@@ -856,7 +856,7 @@ section.tight { padding: 40px 0; }
 
 .form-legal-note {
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin-top: 16px;
 }
 
@@ -1062,7 +1062,7 @@ section.tight { padding: 40px 0; }
 
 .pricing-card .delivery-note {
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin: 6px 0 16px;
 }
 
