@@ -1,0 +1,44 @@
+name: Deploy Staging
+
+# Publishes the `staging` branch to the fieldnote-security-staging repo's
+# GitHub Pages (served at staging.fieldnotesecurity.com). Production is
+# untouched by this workflow - it deploys separately, automatically, from
+# GitHub Pages' native build on pushes to `main` only.
+
+on:
+  push:
+    branches: [staging]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+
+      - name: Lock staging out of search engines
+        run: |
+          cat > robots.txt <<'EOF'
+          User-agent: *
+          Disallow: /
+          EOF
+
+          for f in $(find . -name "*.html" -not -path "./.git/*"); do
+            if ! grep -q 'name="robots"' "$f"; then
+              sed -i 's#</head>#<meta name="robots" content="noindex, nofollow">\n</head>#' "$f"
+            fi
+          done
+
+      - name: Deploy to fieldnote-security-staging Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.STAGING_DEPLOY_KEY }}
+          external_repository: hoongkiet-web/fieldnote-security-staging
+          publish_branch: gh-pages
+          publish_dir: .
+          cname: staging.fieldnotesecurity.com
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
