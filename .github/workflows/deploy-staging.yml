@@ -32,6 +32,13 @@ jobs:
             fi
           done
 
+      - name: Point CNAME at the staging subdomain
+        # The source repo's own CNAME file (fieldnotesecurity.com) gets
+        # checked out along with everything else and would otherwise take
+        # priority over actions-gh-pages' `cname` input - overwrite it
+        # explicitly so staging never publishes the production domain.
+        run: echo "staging.fieldnotesecurity.com" > CNAME
+
       - name: Deploy to fieldnote-security-staging Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -39,6 +46,5 @@ jobs:
           external_repository: hoongkiet-web/fieldnote-security-staging
           publish_branch: gh-pages
           publish_dir: .
-          cname: staging.fieldnotesecurity.com
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
