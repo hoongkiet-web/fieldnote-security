@@ -55,6 +55,7 @@
   <section class="tight">
     <div class="container">
       <div class="legal-body reveal">
+        <!-- TODO: bump to the actual production go-live date before this ships to main - not the staging date it was added on -->
         <p class="legal-updated">Last updated: 18 August 2026</p>
 
         <h2>Who this covers</h2>
@@ -65,12 +66,14 @@
           <li>Name, email address, company name, and domain/website URL submitted through the contact form on this site.</li>
           <li>Any message or context you add to that form.</li>
           <li>During a paid engagement: the domain(s) and target(s) you authorize for scanning, and the technical findings that scan produces (DNS records, open ports, headers, and similar data about the target, not about you personally).</li>
+          <li>If you use the AI chat assistant: the messages you send it, and your IP address (used only to enforce a limit on how many messages can be sent per hour, to prevent abuse).</li>
         </ul>
 
         <h2>Why it's collected (lawful basis)</h2>
         <ul>
           <li><strong>Contract necessity</strong> - to deliver the assessment or report you've requested, once an engagement is agreed.</li>
           <li><strong>Consent</strong> - for the contact form submission itself, which you give by completing and sending it.</li>
+          <li><strong>Legitimate interest</strong> - for the AI chat assistant's IP-based rate limit, which exists to prevent abuse of the service (e.g. automated spam or excessive use that could affect its availability for other visitors). You have the right to object to this - if you'd prefer this isn't collected, you can choose not to use the chat assistant.</li>
         </ul>
 
         <h2>How long it's kept</h2>
@@ -78,14 +81,18 @@
           <li><strong>Final client reports and authorization forms:</strong> retained for 6 years, matching the UK Limitation Act 1980 standard limitation period for contract claims.</li>
           <li><strong>Raw scan data</strong> (detailed technical output, JSON artifacts): retained for 12 months following report delivery, then deleted.</li>
           <li><strong>Free-tier scan submissions</strong> from prospects who did not become paying clients: retained for 12 months, then deleted if no engagement followed.</li>
+          <li><strong>AI chat assistant:</strong> your IP address is held for up to 1 hour in a rate-limit counter, then automatically deleted - this is the only thing stored. The content of your messages is not logged or stored by Fieldnote Security; it is sent to Cloudflare Workers AI (see <em>Third parties</em> below) only to generate a reply, and is not kept afterwards.</li>
         </ul>
         <p>Data is deleted, not just archived, at the end of each period above. You can request earlier deletion at any time by contacting <a href="mailto:contact@fieldnotesecurity.com">contact@fieldnotesecurity.com</a>, subject to the exceptions above where retention supports a legal or contractual purpose.</p>
 
         <h2>Third parties</h2>
-        <p>The contact form on this site is processed by <a href="https://formspree.io" target="_blank" rel="noopener noreferrer">Formspree</a>, a third-party form-handling service. Submitting the form sends your details to Formspree's infrastructure before they reach the company. Formspree's own handling of that data is governed by <a href="https://formspree.io/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Formspree's Privacy Policy</a>. No other third party receives data collected through this site.</p>
+        <p>The contact form on this site is processed by <a href="https://formspree.io" target="_blank" rel="noopener noreferrer">Formspree</a>, a third-party form-handling service. Submitting the form sends your details to Formspree's infrastructure before they reach the company. Formspree's own handling of that data is governed by <a href="https://formspree.io/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Formspree's Privacy Policy</a>.</p>
+        <p>If you use the AI chat assistant, your message is sent to <a href="https://www.cloudflare.com/trust-hub/" target="_blank" rel="noopener noreferrer">Cloudflare Workers AI</a> to generate a reply. Cloudflare's own handling of that data is governed by <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare's Privacy Policy</a>.</p>
+        <p>No other third party receives data collected through this site.</p>
 
         <h2>Cookies and tracking</h2>
         <p>This site does not currently use cookies, analytics, or any tracking technology. If that changes in the future - for example, if analytics is added - this policy will be updated to reflect it before that change goes live.</p>
+        <p>The AI chat assistant keeps your conversation visible in your browser only, using your browser's built-in <code>sessionStorage</code> - this is not a cookie and isn't used for tracking or analytics. It's cleared automatically when you close the browser tab, and is never sent anywhere except back to Fieldnote Security's own chatbot service to continue the same conversation.</p>
 
         <h2>Your rights</h2>
         <p>Under UK GDPR you can ask to access, correct, or delete the personal data held about you, or ask that its use be restricted. To make any of these requests, email <a href="mailto:contact@fieldnotesecurity.com">contact@fieldnotesecurity.com</a>.</p>
