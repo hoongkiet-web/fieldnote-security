@@ -1,0 +1,27 @@
+name: Purge Cloudflare Cache
+
+# Runs alongside GitHub Pages' native build (triggered separately by the
+# same push to main) - this workflow only purges Cloudflare's cache
+# after a production deploy, it doesn't build or deploy anything itself.
+# Only matters now that fieldnotesecurity.com is proxied through
+# Cloudflare - while it was DNS-only, Cloudflare was never in the
+# request path, so there was nothing for it to cache.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Purge Cloudflare cache
+        run: |
+          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' \
+            --fail
