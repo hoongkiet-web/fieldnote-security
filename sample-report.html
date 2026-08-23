@@ -105,13 +105,15 @@
             <div class="report-section-body">
               <table class="report-table">
                 <tr><th>Property</th><th>Value</th></tr>
+                <tr><td>Issuer</td><td class="mono">Cloudflare TLS Issuing ECC CA 3</td></tr>
+                <tr><td>Valid Until</td><td class="mono">27 Oct 2026</td></tr>
                 <tr><td>Protocol</td><td class="mono">TLSv1.3</td></tr>
                 <tr><td>Cipher Suite</td><td class="mono">TLS_AES_256_GCM_SHA384</td></tr>
-                <tr><td>Self-Signed</td><td style="color:var(--sev-high)">YES</td></tr>
+                <tr><td>Self-Signed</td><td style="color:var(--sev-low)">No</td></tr>
               </table>
               <table class="report-table" style="margin-top:12px;">
                 <tr><th>Severity</th><th>Finding</th></tr>
-                <tr><td><span class="badge badge-high">HIGH</span></td><td>Self-signed certificate - not trusted by browsers</td></tr>
+                <tr><td colspan="2" class="empty ok">No SSL issues detected</td></tr>
               </table>
             </div>
           </div>
