@@ -1,0 +1,10 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Email Security Checker",
+  "description": "A technical check of your domain's email authentication - SPF, DKIM, and DMARC reviewed personally, with the exact DNS records to add if your domain can be spoofed.",
+  "provider": {
+    "@id": "https://fieldnotesecurity.com/#organization"
+  },
+  "url": "https://fieldnotesecurity.com/email-security.html"
+}
