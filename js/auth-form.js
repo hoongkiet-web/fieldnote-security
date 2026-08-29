@@ -14,6 +14,22 @@
 
   if (!form) return;
 
+  // FS-110: fire-and-forget business-outcome alert - see contact-form.js
+  // for the identical pattern/reasoning.
+  var MONITOR_PRODUCTION_HOSTS = ['fieldnotesecurity.com', 'www.fieldnotesecurity.com'];
+  var MONITOR_ENDPOINT = MONITOR_PRODUCTION_HOSTS.indexOf(location.hostname) !== -1
+    ? 'https://fieldnotesecurity.com/api/monitor'
+    : 'https://fieldnote-security-monitoring-staging.fieldnotesecurity.workers.dev';
+  function reportFailure(reason) {
+    try {
+      fetch(MONITOR_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: 'authorization-form', reason: reason }),
+      }).catch(function () {});
+    } catch (e) { /* fetch not available or blocked - nothing more to do */ }
+  }
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
 
@@ -42,13 +58,14 @@
           '<p>Thanks - I\'ll cross-check this against the domain(s) and services listed before the scan runs.</p>' +
           '</div>';
       } else {
-        throw new Error('Formspree responded with an error');
+        throw new Error('formspree-status-' + response.status);
       }
-    }).catch(function () {
+    }).catch(function (err) {
       submitBtn.disabled = false;
       submitBtn.removeAttribute('aria-busy');
       submitBtn.textContent = 'Submit authorization';
       status.textContent = 'Something went wrong sending this - please try again, or email contact@fieldnotesecurity.com directly.';
+      reportFailure(err && err.message ? err.message : 'network-error');
     });
   });
 })();

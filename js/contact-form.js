@@ -6,6 +6,26 @@
 
   if (!form) return;
 
+  // FS-110: fire-and-forget business-outcome alert. Same env-detection
+  // pattern as chatbot-widget.js's ENDPOINT - defaults to the staging
+  // Worker for anything that isn't explicitly the production domain.
+  var MONITOR_PRODUCTION_HOSTS = ['fieldnotesecurity.com', 'www.fieldnotesecurity.com'];
+  var MONITOR_ENDPOINT = MONITOR_PRODUCTION_HOSTS.indexOf(location.hostname) !== -1
+    ? 'https://fieldnotesecurity.com/api/monitor'
+    : 'https://fieldnote-security-monitoring-staging.fieldnotesecurity.workers.dev';
+  function reportFailure(reason) {
+    // Never lets a monitoring-call failure affect the user-facing error
+    // path above it - this is purely "let Kiet know," not part of the
+    // form's own success/failure handling.
+    try {
+      fetch(MONITOR_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: 'contact-form', reason: reason }),
+      }).catch(function () {});
+    } catch (e) { /* fetch not available or blocked - nothing more to do */ }
+  }
+
   // Pre-select service checkboxes from ?service=slug params, e.g. a
   // pricing.html tier CTA linking to contact.html?service=vuln or
   // contact.html?service=dns-health&service=email-security
@@ -53,13 +73,16 @@
           '<p>I\'ll take a look and get back to you at the email you provided.</p>' +
           '</div>';
       } else {
-        throw new Error('Formspree responded with an error');
+        // Distinguishes "reached Formspree, got rejected" (the FS-58/59
+        // dead-endpoint failure mode) from a network-level failure below.
+        throw new Error('formspree-status-' + response.status);
       }
-    }).catch(function () {
+    }).catch(function (err) {
       submitBtn.disabled = false;
       submitBtn.removeAttribute('aria-busy');
       submitBtn.textContent = 'Send request';
       status.textContent = 'Something went wrong sending this - please try again, or email contact@fieldnotesecurity.com directly.';
+      reportFailure(err && err.message ? err.message : 'network-error');
     });
   });
 })();
