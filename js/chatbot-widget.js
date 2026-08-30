@@ -1,10 +1,20 @@
 // Fieldnote Security chat widget.
 // Self-contained: injects its own styles and markup, talks to the
-// Cloudflare Worker at /api/chat. Add <script src="js/chatbot-widget.js" defer></script>
+// Cloudflare Worker backend. Add <script src="js/chatbot-widget.js" defer></script>
 // before </body> on any page once the worker is deployed and the
 // system prompt has been reviewed.
 (function () {
-  var ENDPOINT = 'https://fieldnotesecurity.com/api/chat';
+  // Auto-detects environment by hostname so this same file works
+  // correctly on both staging and production without needing an edit
+  // (and possibly forgetting to revert it) at merge time. Defaults to
+  // the staging Worker for anything that isn't explicitly the
+  // production domain - covers staging.fieldnotesecurity.com once its
+  // DNS is live, but also the interim hoongkiet-web.github.io/
+  // fieldnote-security-staging/ fallback URL and local testing.
+  var PRODUCTION_HOSTS = ['fieldnotesecurity.com', 'www.fieldnotesecurity.com'];
+  var ENDPOINT = PRODUCTION_HOSTS.indexOf(location.hostname) !== -1
+    ? 'https://fieldnotesecurity.com/api/chat'
+    : 'https://fieldnote-security-chatbot-staging.fieldnotesecurity.workers.dev';
   var STORAGE_KEY = 'fns_chat_history';
   var history = [];
 
@@ -64,7 +74,7 @@
       '<textarea class="fns-chat-input" id="fnsChatInput" rows="1" maxlength="800" placeholder="Ask about services, pricing..." aria-label="Message"></textarea>' +
       '<button type="submit" class="fns-chat-send" id="fnsChatSend">Send</button>' +
     '</form>' +
-    '<p class="fns-chat-disclaimer">AI assistant, not a human - answers are general guidance, not a substitute for a full assessment.</p>';
+    '<p class="fns-chat-disclaimer">AI assistant, not a human - answers are general guidance, not legal advice and not a substitute for a full assessment.</p>';
 
   document.body.appendChild(btn);
   document.body.appendChild(panel);

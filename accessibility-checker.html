@@ -7,28 +7,8 @@
 <meta name="description" content="A technical scan against WCAG standards, reviewed by a person - not just an automated pass/fail score. Issues ranked by real user impact, with plain-English fixes.">
 <link rel="stylesheet" href="css/styles.css">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "@id": "https://fieldnotesecurity.com/#organization",
-  "name": "Fieldnote Security",
-  "url": "https://fieldnotesecurity.com",
-  "email": "contact@fieldnotesecurity.com"
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Service",
-  "name": "Accessibility Checker",
-  "description": "A technical scan against WCAG standards, reviewed by a person - not just an automated pass/fail score. Issues ranked by real user impact, with plain-English fixes.",
-  "provider": {
-    "@id": "https://fieldnotesecurity.com/#organization"
-  },
-  "url": "https://fieldnotesecurity.com/accessibility-checker.html"
-}
-</script>
+<script type="application/ld+json" src="js/ld/organization.json"></script>
+<script type="application/ld+json" src="js/ld/service-accessibility.json"></script>
 </head>
 <body>
 
@@ -141,32 +121,8 @@
   </div>
 </footer>
 
-<script>
-(function () {
-  var menuBtn = document.getElementById('menuBtn');
-  var navLinks = document.querySelector('.nav-links');
-  if (menuBtn && navLinks) {
-    menuBtn.addEventListener('click', function () {
-      var open = navLinks.classList.toggle('mobile-open');
-      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-  }
+<script src="js/main.js" defer></script>
 
-  if (!('IntersectionObserver' in window)) return;
-  document.documentElement.classList.add('js-ready');
-
-  var els = document.querySelectorAll('.reveal');
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-visible');
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
-  els.forEach(function (el) { io.observe(el); });
-})();
-</script>
-
+<script src="js/chatbot-widget.js" defer></script>
 </body>
 </html>

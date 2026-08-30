@@ -1,0 +1,10 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Third-Party Script Audit",
+  "description": "An inventory of every third-party script, tracker, and embed loading on your pages, and whether it should be trusted - reviewed by a person, not just an automated scan.",
+  "provider": {
+    "@id": "https://fieldnotesecurity.com/#organization"
+  },
+  "url": "https://fieldnotesecurity.com/third-party-audit.html"
+}

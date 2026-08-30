@@ -7,16 +7,7 @@
 <meta name="description" content="One-off assessments from a free DNS &amp; email check to a full Vulnerability Assessment - priced by service, no subscriptions, no dashboard, reviewed by hand.">
 <link rel="stylesheet" href="css/styles.css">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "@id": "https://fieldnotesecurity.com/#organization",
-  "name": "Fieldnote Security",
-  "url": "https://fieldnotesecurity.com",
-  "email": "contact@fieldnotesecurity.com"
-}
-</script>
+<script type="application/ld+json" src="js/ld/organization.json"></script>
 </head>
 <body>
 
@@ -164,32 +155,8 @@
   </div>
 </footer>
 
-<script>
-(function () {
-  var menuBtn = document.getElementById('menuBtn');
-  var navLinks = document.querySelector('.nav-links');
-  if (menuBtn && navLinks) {
-    menuBtn.addEventListener('click', function () {
-      var open = navLinks.classList.toggle('mobile-open');
-      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-  }
+<script src="js/main.js" defer></script>
 
-  if (!('IntersectionObserver' in window)) return;
-  document.documentElement.classList.add('js-ready');
-
-  var els = document.querySelectorAll('.reveal');
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-visible');
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
-  els.forEach(function (el) { io.observe(el); });
-})();
-</script>
-
+<script src="js/chatbot-widget.js" defer></script>
 </body>
 </html>
