@@ -1,8 +1,0 @@
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "@id": "https://fieldnotesecurity.com/#organization",
-  "name": "Fieldnote Security",
-  "url": "https://fieldnotesecurity.com",
-  "email": "contact@fieldnotesecurity.com"
-}
