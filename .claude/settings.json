@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python .claude/hooks/block-main-push.py",
+            "command": "python \"C:\\Users\\jewel\\OneDrive\\Documents\\Kiet's Docs\\Claude\\cybersec-agency\\website\\.claude\\hooks\\block-main-push.py\"",
             "statusMessage": "Checking git push target..."
           }
         ]
