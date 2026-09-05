@@ -1,0 +1,35 @@
+name: Purge Cloudflare Cache
+
+# Purges Cloudflare's cache after GitHub Pages finishes building and
+# deploying - not on push directly, since push and the Pages build both
+# fire in parallel and a push-triggered purge can race ahead of the
+# build, purging before the new content exists and leaving Cloudflare
+# to re-cache the stale page on the next request. Chaining off
+# pages-build-deployment's completion guarantees the new content is
+# already live at the origin before the purge fires.
+# Only matters now that fieldnotesecurity.com is proxied through
+# Cloudflare - while it was DNS-only, Cloudflare was never in the
+# request path, so there was nothing for it to cache.
+
+on:
+  workflow_run:
+    workflows: ["pages-build-deployment"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  purge:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Purge Cloudflare cache
+        run: |
+          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' \
+            --fail

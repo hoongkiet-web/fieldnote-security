@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Bash(git push origin main)",
+      "Bash(git push origin main*)",
+      "Bash(git push -u origin main*)",
+      "Bash(git push --set-upstream origin main*)",
+      "Bash(git push origin HEAD:main*)",
+      "Bash(git push --force origin main*)",
+      "Bash(git push -f origin main*)",
+      "Bash(git push --delete origin main*)"
+    ]
+  },
+  "autoMode": {
+    "hard_deny": [
+      "$defaults",
+      "Never allow `git push origin main` (or any git push whose target ref resolves to origin's main branch, in any flag order/form - e.g. `git push origin HEAD:main`, `git push -u origin main`, a bare `git push` while checked out on main) to execute via Claude Code, even on an explicit, direct, in-chat user instruction. This is a fixed project policy (see memory/standards.md in the scanner repo) - user intent does not clear this block, only Kiet running the command himself in his own terminal does. git push origin staging and pushes to any other branch are unaffected."
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\jewel\\OneDrive\\Documents\\Kiet's Docs\\Claude\\cybersec-agency\\website\\.claude\\hooks\\block-main-push.py\"",
+            "statusMessage": "Checking git push target..."
+          }
+        ]
+      }
+    ]
+  }
+}
