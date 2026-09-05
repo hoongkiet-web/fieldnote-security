@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Accessibility Checker - Fieldnote Security</title>
-<meta name="description" content="A technical scan against WCAG standards, reviewed by a person - not just an automated pass/fail score. Issues ranked by real user impact, with plain-English fixes.">
+<meta name="description" content="An automated first-pass scan (axe-core, WCAG 2.1 AA) covering the mechanical issues - color contrast, missing alt text, ARIA misuse, heading structure, form labels - plus a manual review for what automated tools can't judge, like reading order and genuine keyboard usability.">
 <link rel="stylesheet" href="css/styles.css">
 
 <script type="application/ld+json">
@@ -60,7 +60,7 @@
   <section class="page-hero">
     <div class="container">
       <h1>If someone can't use your site, they can't be your customer.</h1>
-      <p>A technical scan against WCAG standards, reviewed by a person - not just an automated pass/fail score.</p>
+      <p>An automated first-pass scan, not a full audit. It catches roughly 30-50% of real-world WCAG issues - the mechanical, machine-detectable class - then I review what a scan can't judge on its own.</p>
     </div>
   </section>
 
@@ -68,17 +68,17 @@
     <div class="container">
       <div class="section-head reveal">
         <h2>What it covers</h2>
-        <p>Three phases: an automated scan, a manual usability review, and a report ranked by real impact.</p>
+        <p>Three phases: an automated scan for the mechanical issues, a manual review for what a scan can't judge, and a report ranked by real impact - not just rule violations.</p>
       </div>
 
       <div class="phase-list reveal">
         <div class="phase-row">
           <div><span class="phase-num">PHASE 01</span><h3>Automated Accessibility Scan</h3></div>
-          <p>Missing alt text, insufficient color contrast, missing ARIA labels, keyboard navigation gaps, and heading structure issues - the checks a machine can run reliably.</p>
+          <p>Missing alt text, insufficient color contrast, ARIA misuse, broken heading structure, and unlabeled form fields - axe-core's WCAG 2.1 AA ruleset, the mechanical checks a machine can verify reliably. This covers roughly 30-50% of real-world WCAG issues, not the full picture.</p>
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 02</span><h3>Manual Usability Review</h3></div>
-          <p>Keyboard navigation testing, focus order, meaningful link text, and form error handling - the things automated scanners consistently miss.</p>
+          <p>Keyboard navigation testing, focus order, meaningful link text (not just present alt text, but whether it actually makes sense), logical reading order for screen readers, and form error handling - the judgment calls a scan can't make.</p>
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 03</span><h3>Prioritized Report</h3></div>
@@ -106,7 +106,7 @@
   <section>
     <div class="container">
       <div class="pull-statement reveal">
-        <p>Automated tools catch maybe a third of real accessibility issues. I check what they miss.</p>
+        <p>Automated tools catch roughly 30-50% of real accessibility issues - the mechanical ones. The judgment calls - meaningful alt text, logical reading order, genuine keyboard usability - still need a person. That's what the manual review is for.</p>
       </div>
     </div>
   </section>
