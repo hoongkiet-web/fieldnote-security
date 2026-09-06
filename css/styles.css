@@ -163,6 +163,20 @@ h1, h2, h3 {
 .nav-links a:not(.btn):hover { color: var(--text-primary); text-decoration: none; }
 .nav-links a:not(.btn)[aria-current="page"] { color: var(--text-primary); }
 
+/* FS-50: plain :focus, not :focus-visible - the mobile menu's own open
+   handler moves focus here via a scripted .focus() call fired synchronously
+   inside a real click event, which Chromium's :focus-visible heuristic does
+   not treat as keyboard-originated, so a :focus-visible rule never matches
+   this case and would render no ring at all. :focus fires regardless of
+   input modality, so it's the only selector that actually shows a ring for
+   the tap-to-open path this bug is about. Same accent tokens and
+   box-shadow-ring approach as the .field:focus-visible rule below, adapted
+   for a link with no border to repurpose. */
+.nav-links a:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent), 0 0 0 5px var(--accent-dim);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
