@@ -48,3 +48,38 @@ jobs:
           publish_dir: .
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
+
+      # FS-131: the step above only pushes to fieldnote-security-staging's
+      # gh-pages branch - that repo's OWN GitHub Pages build still has to run
+      # afterward before the new content is actually live at the origin
+      # Cloudflare would re-fetch on purge. This repo's Actions run has no
+      # visibility into that separate repo's Pages build completion (no
+      # workflow_run equivalent across repos), so this is a best-effort fixed
+      # delay, NOT a guarantee the race is closed - it reduces the window,
+      # it does not eliminate it. Sized from real historical data: the last
+      # 20 builds of fieldnote-security-staging's Pages site
+      # (`gh api repos/hoongkiet-web/fieldnote-security-staging/pages/builds`,
+      # checked 2026-09-07) ranged 16.1-29.1s, clustered around 17-20s. 60s
+      # comfortably covers the observed max with margin, not a guess.
+      - name: Wait for the staging Pages build to (most likely) finish
+        run: sleep 60
+
+      # FS-131: hostname-scoped, NOT purge_everything - staging and
+      # production share this same Cloudflare zone (confirmed during FS-131
+      # investigation: staging.fieldnotesecurity.com resolves to real
+      # Cloudflare anycast IPs, and Cloudflare zones cover a domain's
+      # subdomains uniformly), so a full-zone purge here would also wipe
+      # production's cache on every staging deploy. Reuses the same
+      # CLOUDFLARE_API_TOKEN/CLOUDFLARE_ZONE_ID secrets purge-cache.yml
+      # already uses for production - no new credentials needed, confirmed
+      # via Cloudflare's own docs that a hosts-scoped purge requires the same
+      # `Cache Purge` permission as purge_everything, on all plans including
+      # Free (developers.cloudflare.com/cache/how-to/purge-cache/, checked
+      # 2026-09-07).
+      - name: Purge Cloudflare cache for staging.fieldnotesecurity.com only
+        run: |
+          curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"hosts":["staging.fieldnotesecurity.com"]}' \
+            --fail

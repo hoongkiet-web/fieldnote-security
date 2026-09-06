@@ -1,3 +1,8 @@
+// FS-131-verify-4486150874b3: trivial marker comment, added solely to give
+// the FS-131 cache-purge fix's end-to-end verification a byte-level way to
+// confirm staging serves fresh content post-deploy while production
+// (main.js on fieldnotesecurity.com) stays untouched. Safe to remove once
+// FS-131 is closed.
 (function () {
   var menuBtn = document.getElementById('menuBtn');
   var navLinks = document.querySelector('.nav-links');
