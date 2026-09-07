@@ -85,6 +85,72 @@
   var sendBtn = panel.querySelector('#fnsChatSend');
   var closeBtn = panel.querySelector('.fns-chat-close');
 
+  // FS-133: background the open panel overlays, for the same inert-based
+  // trap FS-50 already uses for the mobile menu (js/main.js). Deliberately
+  // main/footer only, NOT header - the mobile menu's own toggle button
+  // (#menuBtn) lives inside <header>, and `inert` blocks clicks as well as
+  // focus, so making header inert here would silently break the mutual-
+  // exclusion requirement (clicking the hamburger while chat is open must
+  // still work, to close chat and open the menu). btn/panel themselves are
+  // appended directly to <body>, outside header/main/footer, so neither
+  // widget's own toggle button is ever caught by the other's inert scope.
+  var chatBackgroundEls = [document.querySelector('main'), document.querySelector('footer')];
+  function setChatBackgroundInert(isInert) {
+    chatBackgroundEls.forEach(function (el) {
+      if (el) el.toggleAttribute('inert', isInert);
+    });
+  }
+
+  // FS-133: named open/close functions (was inline toggle logic in the
+  // click handler) - lets Escape and the close button share one close path,
+  // and gives the mobile menu a stable hook to close this panel from.
+  function openPanel() {
+    // FS-133: mutual exclusion with the mobile menu - see the matching
+    // comment in js/main.js's openMenu() for the full reasoning.
+    if (window.__fnsMobileMenu && window.__fnsMobileMenu.isOpen && window.__fnsMobileMenu.isOpen()) {
+      window.__fnsMobileMenu.close();
+    }
+    panel.classList.add('open');
+    setChatBackgroundInert(true);
+    input.focus();
+  }
+
+  function closePanel() {
+    panel.classList.remove('open');
+    setChatBackgroundInert(false);
+    // FS-133: explicit, not incidental - matches every other close path
+    // (Escape, the close button) so focus never gets lost to <body>
+    // regardless of which one the user used.
+    btn.focus();
+  }
+
+  // FS-133: Escape-to-close plus a hand-rolled Tab trap - only two specific
+  // boundary transitions need intercepting (forward off the last focusable
+  // element, backward off the first), not every keypress, since the panel's
+  // 3 focusable elements (close/input/send) already sit in the correct
+  // order natively. One document-level listener rather than one scoped to
+  // the panel: Escape must still work even if focus has drifted outside the
+  // panel for any reason, and a single listener is simpler than adding/
+  // removing one on every open/close.
+  document.addEventListener('keydown', function (e) {
+    if (!panel.classList.contains('open')) return;
+
+    if (e.key === 'Escape') {
+      closePanel();
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      if (e.shiftKey && document.activeElement === closeBtn) {
+        e.preventDefault();
+        sendBtn.focus();
+      } else if (!e.shiftKey && document.activeElement === sendBtn) {
+        e.preventDefault();
+        closeBtn.focus();
+      }
+    }
+  });
+
   function renderMessage(role, text) {
     var el = document.createElement('div');
     el.className = 'fns-msg ' + (role === 'user' ? 'fns-msg-user' : 'fns-msg-bot');
@@ -103,10 +169,19 @@
   }
 
   btn.addEventListener('click', function () {
-    panel.classList.toggle('open');
-    if (panel.classList.contains('open')) input.focus();
+    if (panel.classList.contains('open')) closePanel();
+    else openPanel();
   });
-  closeBtn.addEventListener('click', function () { panel.classList.remove('open'); });
+  closeBtn.addEventListener('click', closePanel);
+
+  // FS-133: exposed so js/main.js's mobile menu can close this panel before
+  // opening itself - see openMenu()'s matching check. Load-order-safe for
+  // the same reason noted in js/main.js: both scripts execute (via defer)
+  // before any user interaction is possible.
+  window.__fnsChatPanel = {
+    close: closePanel,
+    isOpen: function () { return panel.classList.contains('open'); },
+  };
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
