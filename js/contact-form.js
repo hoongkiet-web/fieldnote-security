@@ -45,7 +45,7 @@
     if (checkbox) checkbox.checked = true;
   });
 
-  form.addEventListener('submit', function (e) {
+  form.addEventListener('submit', window.__fnsGuardAgainstReentry(function (e) {
     e.preventDefault();
 
     if (!form.reportValidity()) return;
@@ -61,7 +61,7 @@
     submitBtn.setAttribute('aria-busy', 'true');
     submitBtn.textContent = 'Sending…';
 
-    fetch(form.action, {
+    return fetch(form.action, {
       method: 'POST',
       body: new FormData(form),
       headers: { 'Accept': 'application/json' }
@@ -84,5 +84,5 @@
       status.textContent = 'Something went wrong sending this - please try again, or email contact@fieldnotesecurity.com directly.';
       reportFailure(err && err.message ? err.message : 'network-error');
     });
-  });
+  }));
 })();

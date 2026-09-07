@@ -183,7 +183,7 @@
     isOpen: function () { return panel.classList.contains('open'); },
   };
 
-  form.addEventListener('submit', function (e) {
+  form.addEventListener('submit', window.__fnsGuardAgainstReentry(function (e) {
     e.preventDefault();
     var text = input.value.trim();
     if (!text) return;
@@ -195,7 +195,7 @@
     input.disabled = true;
     sendBtn.disabled = true;
 
-    fetch(ENDPOINT, {
+    return fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text, history: history.slice(0, -1) }),
@@ -215,5 +215,5 @@
         sendBtn.disabled = false;
         input.focus();
       });
-  });
+  }));
 })();
