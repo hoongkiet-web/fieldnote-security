@@ -987,8 +987,8 @@ section.tight { padding: 40px 0; }
   flex-shrink: 0;
 }
 
-.field input:invalid:not(:placeholder-shown),
-.field textarea:invalid:not(:placeholder-shown) {
+.field input:user-invalid,
+.field textarea:user-invalid {
   border-color: var(--sev-high);
 }
 
