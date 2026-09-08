@@ -177,6 +177,82 @@ h1, h2, h3 {
   box-shadow: 0 0 0 2px var(--accent), 0 0 0 5px var(--accent-dim);
 }
 
+/* FS-91: Services dropdown, desktop-only (>=1280px). Below that breakpoint
+   both the wrapper and its inner menu render as display:contents, so the
+   group is visually and structurally indistinguishable from flat nav-links
+   siblings - same DOM order, same existing flat hamburger-menu experience,
+   completely unaffected. The matching JS guard (js/main.js) also refuses to
+   attach any interactive/ARIA behavior below 1280px, so this isn't relying
+   on CSS alone to keep mobile inert. */
+.nav-dropdown,
+.nav-dropdown-menu {
+  display: contents;
+}
+
+/* Set via JS as a plain class (not aria-current itself, which must stay on
+   the one link that's actually the current page) when the active page is
+   one of the items inside the - possibly closed - dropdown, so desktop
+   visitors on e.g. gdpr-checker.html still see "Services" highlighted even
+   without opening the menu. */
+.nav-dropdown-toggle.nav-dropdown-toggle-active {
+  color: var(--text-primary);
+}
+
+@media (min-width: 1280px) {
+  .nav-dropdown {
+    display: inline-flex;
+    position: relative;
+  }
+
+  .nav-dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .nav-dropdown-toggle::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    margin-top: -3px;
+    transition: transform 160ms ease, margin-top 160ms ease;
+  }
+  .nav-dropdown-toggle[aria-expanded="true"]::after {
+    transform: rotate(-135deg);
+    margin-top: 3px;
+  }
+
+  .nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    min-width: 190px;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    z-index: 50;
+  }
+  .nav-dropdown-menu.open { display: flex; }
+
+  .nav-dropdown-menu a {
+    padding: 8px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .nav-dropdown-menu a:hover {
+    background: var(--accent-dim);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
