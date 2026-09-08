@@ -76,6 +76,113 @@
     };
   }
 
+  // FS-91: Services dropdown, desktop-only (>=1280px). "Services" stays a
+  // real <a href="services.html"> (not a <button>) so openMenu()'s
+  // `navLinks.querySelector('a')` above keeps finding a real link first on
+  // mobile, exactly as before FS-91 - deliberately not converted, per the
+  // focus-risk this codebase already identified for that selector.
+  var servicesToggle = document.getElementById('servicesToggle');
+  var servicesMenu = document.getElementById('servicesMenu');
+
+  if (servicesToggle && servicesMenu) {
+    var desktopMql = window.matchMedia('(min-width: 1280px)');
+
+    function isDesktopDropdown() { return desktopMql.matches; }
+    function isDropdownOpen() { return servicesMenu.classList.contains('open'); }
+
+    function openServicesDropdown() {
+      servicesMenu.classList.add('open');
+      servicesToggle.setAttribute('aria-expanded', 'true');
+      // Same convention as openMenu()/openPanel() elsewhere in this
+      // codebase: focus moves to the first item inside on open.
+      var firstItem = servicesMenu.querySelector('a');
+      if (firstItem) firstItem.focus();
+    }
+
+    function closeServicesDropdown(returnFocusToToggle) {
+      servicesMenu.classList.remove('open');
+      servicesToggle.setAttribute('aria-expanded', 'false');
+      if (returnFocusToToggle) servicesToggle.focus();
+    }
+
+    // "Services" is both the toggle and a real link to services.html. On
+    // desktop this click toggles the dropdown instead of navigating - the
+    // only self-consistent reading of "click-toggle dropdown" plus
+    // Escape-returns-focus-to-toggle/click-outside-closes/focus-first-item,
+    // none of which would ever fire if a click just navigated away. Below
+    // 1280px the handler is a no-op, so the href navigates normally, same
+    // as every other nav link.
+    servicesToggle.addEventListener('click', function (e) {
+      if (!isDesktopDropdown()) return;
+      e.preventDefault();
+      if (isDropdownOpen()) closeServicesDropdown(false);
+      else openServicesDropdown();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (!isDesktopDropdown() || !isDropdownOpen()) return;
+      if (e.key === 'Escape') closeServicesDropdown(true);
+    });
+
+    // Click-outside-closes. No Tab-trap here (deliberately, per review
+    // checkpoint - a nav dropdown trapping Tab would be non-standard and
+    // surprise keyboard users); items stay naturally Tab-reachable in DOM
+    // order while the menu is open, same as focusout below closing it once
+    // Tab carries focus past the last item.
+    document.addEventListener('click', function (e) {
+      if (!isDesktopDropdown() || !isDropdownOpen()) return;
+      if (!servicesToggle.contains(e.target) && !servicesMenu.contains(e.target)) {
+        closeServicesDropdown(false);
+      }
+    });
+
+    // Not explicitly required by the ticket, added for correctness: without
+    // this, tabbing straight through an open dropdown into the rest of the
+    // nav would leave it visually stuck open. Deferred one frame so the
+    // browser has already moved focus to its real destination before this
+    // checks where focus landed.
+    document.addEventListener('focusout', function () {
+      if (!isDesktopDropdown() || !isDropdownOpen()) return;
+      window.requestAnimationFrame(function () {
+        var active = document.activeElement;
+        if (!servicesToggle.contains(active) && !servicesMenu.contains(active)) {
+          closeServicesDropdown(false);
+        }
+      });
+    });
+
+    // ARIA presence itself is breakpoint-gated, not just the interactive
+    // behavior - without this, a mobile screen-reader user would hear
+    // "Services, has popup, collapsed" on a link that, below 1280px, has no
+    // popup at all and just navigates normally.
+    function applyDropdownMode() {
+      if (isDesktopDropdown()) {
+        servicesToggle.setAttribute('aria-haspopup', 'true');
+        servicesToggle.setAttribute('aria-controls', 'servicesMenu');
+        servicesToggle.setAttribute('aria-expanded', isDropdownOpen() ? 'true' : 'false');
+      } else {
+        // closeServicesDropdown() itself sets aria-expanded="false" as a
+        // side effect, so it must run BEFORE the removeAttribute calls
+        // below - otherwise it would silently put aria-expanded right back.
+        closeServicesDropdown(false);
+        servicesToggle.removeAttribute('aria-haspopup');
+        servicesToggle.removeAttribute('aria-controls');
+        servicesToggle.removeAttribute('aria-expanded');
+      }
+    }
+    applyDropdownMode();
+    desktopMql.addEventListener('change', applyDropdownMode);
+
+    // Highlights "Services" via a plain class (not aria-current itself,
+    // which must stay on the one link that's actually the current page)
+    // when the current page is one of the items inside the - possibly
+    // closed - dropdown, so it doesn't visually disappear from the nav
+    // just because it's collapsed by default.
+    if (servicesMenu.querySelector('a[aria-current="page"]')) {
+      servicesToggle.classList.add('nav-dropdown-toggle-active');
+    }
+  }
+
   if (!('IntersectionObserver' in window)) return;
   document.documentElement.classList.add('js-ready');
 
