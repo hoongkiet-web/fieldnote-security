@@ -151,6 +151,32 @@
     }
   });
 
+  // FS-52: Enter-to-send, Shift+Enter for a newline. Scoped to the message
+  // textarea itself, deliberately separate from FS-133's document-level
+  // Escape/Tab-trap listener above - that listener's concern is open/close
+  // and focus-trap behavior, not message sending, so this stays its own
+  // listener rather than being folded in.
+  input.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || e.shiftKey) return;
+
+    // IME composition in progress (e.g. confirming a CJK candidate) - let
+    // the browser handle Enter normally rather than intercepting it.
+    // Checks both signals since some browsers (notably older Safari/
+    // Firefox) report isComposing inconsistently; keyCode 229 is the
+    // long-standing fallback signal for "this keypress is part of an IME
+    // composition."
+    if (e.isComposing || e.keyCode === 229) return;
+
+    // Always suppress the newline on a plain Enter, regardless of content,
+    // before checking whether there's anything to send - reuses
+    // form.requestSubmit() so the existing submit handler (and FS-60's
+    // re-entry guard) applies with zero duplication; an empty message is a
+    // silent no-op via that handler's own `if (!text) return;` guard.
+    e.preventDefault();
+    if (!input.value.trim()) return;
+    form.requestSubmit();
+  });
+
   function renderMessage(role, text) {
     var el = document.createElement('div');
     el.className = 'fns-msg ' + (role === 'user' ? 'fns-msg-user' : 'fns-msg-bot');
