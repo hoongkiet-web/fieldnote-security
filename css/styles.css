@@ -253,12 +253,15 @@ h1, h2, h3 {
   }
 
   /* FS-91 follow-up: link to the services overview page itself, visually
-     separated from the five specific service links above it since desktop
-     "Services" only toggles the panel and no longer navigates there. */
+     separated from the five specific service links below it since desktop
+     "Services" only toggles the panel and no longer navigates there. First
+     in the panel (moved 2026-09-08) so it's also what focus-on-open lands
+     on - the border sits below it now, not above, to keep separating it
+     from the specific-service items rather than from the panel's own edge. */
   .nav-dropdown-menu a.nav-dropdown-view-all {
-    margin-top: 4px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
+    margin-bottom: 4px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
     color: var(--text-secondary);
   }
 }
