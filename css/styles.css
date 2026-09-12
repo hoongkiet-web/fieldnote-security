@@ -189,6 +189,19 @@ h1, h2, h3 {
   display: contents;
 }
 
+/* FS-91 follow-up (2026-09-08): "View all services" is a genuinely new
+   element with no reason to exist below 1280px - mobile's plain "Services"
+   link (never converted into a toggle there) already points to the same
+   services.html URL, so unwrapping this item into the flat list alongside
+   the five service links would put a fully redundant duplicate directly
+   under "Services". The five service links themselves are correctly left
+   alone by this rule - they were always meant to flow into the mobile flat
+   list, same as before FS-91's dropdown existed. Overridden back to visible
+   at >=1280px below, alongside the rest of the desktop-only dropdown. */
+.nav-dropdown-menu a.nav-dropdown-view-all {
+  display: none;
+}
+
 /* Set via JS as a plain class (not aria-current itself, which must stay on
    the one link that's actually the current page) when the active page is
    one of the items inside the - possibly closed - dropdown, so desktop
@@ -259,6 +272,7 @@ h1, h2, h3 {
      on - the border sits below it now, not above, to keep separating it
      from the specific-service items rather than from the panel's own edge. */
   .nav-dropdown-menu a.nav-dropdown-view-all {
+    display: block;
     margin-bottom: 4px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
