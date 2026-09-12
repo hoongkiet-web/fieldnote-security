@@ -251,6 +251,16 @@ h1, h2, h3 {
     color: var(--text-primary);
     text-decoration: none;
   }
+
+  /* FS-91 follow-up: link to the services overview page itself, visually
+     separated from the five specific service links above it since desktop
+     "Services" only toggles the panel and no longer navigates there. */
+  .nav-dropdown-menu a.nav-dropdown-view-all {
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
 }
 
 .btn {
