@@ -1090,6 +1090,24 @@ section.tight { padding: 40px 0; }
   flex-shrink: 0;
 }
 
+/* FS-56: the shared .field input:focus-visible rule (above) relies on a
+   border-color change as its primary visible cue, with the box-shadow
+   halo (--accent-dim, 12% alpha) as a secondary accent - fine for styled
+   text inputs/textareas/selects, where the border-color change alone is
+   ~8.33:1. Native unstyled checkboxes (no appearance:none anywhere in
+   this codebase) don't render a custom border-color at all, so they were
+   left relying solely on that halo, which measures ~1.24:1 alone - far
+   below WCAG 1.4.11's 3:1 minimum. This override wins by source order at
+   equal specificity (0,2,1) over the shared rule above, without touching
+   it, so text/textarea/select focus states are unaffected. Full-opacity
+   --accent here (not --accent-dim) measures ~8.33:1 - see
+   session-reports/2026-09-08-fs56-investigation.md for the full contrast
+   analysis, including why --accent-border (~2.10:1) was ruled out. */
+.checkbox-option input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
 .field input:user-invalid,
 .field textarea:user-invalid {
   border-color: var(--sev-high);
