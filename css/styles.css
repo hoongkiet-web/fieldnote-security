@@ -1082,30 +1082,58 @@ section.tight { padding: 40px 0; }
   color: var(--text-primary);
   cursor: pointer;
 }
+/* FS-56 custom checkbox (2026-09-08, supersedes the box-shadow-only
+   override this replaces): the follow-up investigation
+   (session-reports/2026-09-08-fs56-followup-investigation.md) found the
+   prior fix, while passing WCAG 1.4.11 (8.333:1), had two compounding
+   problems it couldn't solve while the checkbox kept native rendering -
+   (1) a real perceptual-area gap (a thin ring on an 18px box reads far
+   less prominently than the same ring on a full-width text input, ~5-15x
+   less visible blue area, measured) and (2) a genuine WebKit/Safari bug:
+   box-shadow computes to literal `none` on native-appearance checkboxes
+   there, confirmed via an isolated test where the *only* change that
+   fixed it was appearance:none. Removing native appearance is required
+   to fix WebKit at all, and it also makes border-color/background-color
+   effective on the box for the first time - closing the perceptual gap
+   by giving the checkbox the same two-cue focus pattern (solid
+   border-color change + box-shadow halo) already used by text inputs,
+   plus a fully custom checked-state fill/checkmark since appearance:none
+   removes the browser's native checked rendering entirely. The real
+   <input type="checkbox"> element and its wrapping <label> are
+   unchanged - only visual rendering is replaced, not the underlying
+   element, so keyboard operability (Tab, Space) and accessibility-tree
+   semantics (role, name, checked state) are unaffected by design -
+   verified directly, not assumed, see the implementation report. */
 .checkbox-option input {
+  appearance: none;
+  -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  accent-color: var(--accent);
+  margin: 0;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  background-color: #fff;
   cursor: pointer;
   flex-shrink: 0;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-/* FS-56: the shared .field input:focus-visible rule (above) relies on a
-   border-color change as its primary visible cue, with the box-shadow
-   halo (--accent-dim, 12% alpha) as a secondary accent - fine for styled
-   text inputs/textareas/selects, where the border-color change alone is
-   ~8.33:1. Native unstyled checkboxes (no appearance:none anywhere in
-   this codebase) don't render a custom border-color at all, so they were
-   left relying solely on that halo, which measures ~1.24:1 alone - far
-   below WCAG 1.4.11's 3:1 minimum. This override wins by source order at
-   equal specificity (0,2,1) over the shared rule above, without touching
-   it, so text/textarea/select focus states are unaffected. Full-opacity
-   --accent here (not --accent-dim) measures ~8.33:1 - see
-   session-reports/2026-09-08-fs56-investigation.md for the full contrast
-   analysis, including why --accent-border (~2.10:1) was ruled out. */
+.checkbox-option input:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  /* Inline SVG checkmark, stroke colour #04121f matching the existing
+     dark-navy-on-accent-blue pattern already used for the chat button
+     icon (js/chatbot-widget.js) - not an arbitrary new colour choice. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2304121f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5L6.5 11.5L12.5 4.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 11px 11px;
+}
+
 .checkbox-option input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-border);
 }
 
 .field input:user-invalid,
