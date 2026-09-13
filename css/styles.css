@@ -1074,7 +1074,19 @@ section.tight { padding: 40px 0; }
   flex-direction: column;
   gap: 10px;
 }
-.checkbox-option {
+/* FS-56 follow-up (2026-09-08): specificity fix, not new behavior - the
+   `label` element is added to this selector (0,1,1) specifically to beat
+   `.field label`'s `display: block` (also 0,1,1, but it appears earlier
+   in the file, so it previously won on source order despite this rule's
+   intent). This checkbox-option label sits inside a `.field`-classed
+   fieldset on both forms, so it was always a target of that generic
+   label rule. Confirmed via a pre-FS-56 comparison that this is a
+   pre-existing bug, not a regression from the custom checkbox work: the
+   native checkbox showed the identical top-of-first-line misalignment
+   against a wrapped, multi-line label (#confirmAuth) - the custom
+   checkbox's larger, more visually prominent rendering just made an
+   existing flaw easier to notice, it didn't introduce it. */
+label.checkbox-option {
   display: flex;
   align-items: center;
   gap: 10px;
