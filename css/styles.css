@@ -1097,9 +1097,11 @@ label.checkbox-option {
 /* FS-56 follow-up (2026-09-13): deliberate exception, not a bug - Kiet's
    own design call after reviewing #confirmAuth specifically. Centering
    the checkbox against the whole 3-line "I confirm I am authorized..."
-   label looks visually odd (it floats in empty space next to the middle
-   line); bottom-aligning it, roughly matching where it sat before the
-   general centering fix, reads better for this one long-copy label. The
+   label looks visually odd (it floats in empty space next to a middle
+   line); aligning it to the label's first line reads better for this one
+   long-copy label (initially shipped as bottom/flex-end, corrected to
+   top/flex-start after live review - the class was renamed to match,
+   not left as a stale "bottom-aligned" name pointing at flex-start). The
    general label.checkbox-option rule above stays untouched - every
    single-line checkbox on both forms remains centered. `align-items`
    lives on the `<label>` itself (it's the flex container), not on the
@@ -1107,8 +1109,8 @@ label.checkbox-option {
    via an added modifier class - not #confirmAuth's input directly, which
    would have had no effect on its own. Specificity (0,3,1) beats
    label.checkbox-option's (0,1,1) regardless of source order. */
-label.checkbox-option.checkbox-option--bottom-aligned {
-  align-items: flex-end;
+label.checkbox-option.checkbox-option--top-aligned {
+  align-items: flex-start;
 }
 /* FS-56 custom checkbox (2026-09-08, supersedes the box-shadow-only
    override this replaces): the follow-up investigation
