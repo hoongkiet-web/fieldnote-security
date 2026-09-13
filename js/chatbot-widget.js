@@ -36,7 +36,7 @@
     'font-family:var(--font-body);overflow:hidden;}',
     '.fns-chat-panel.open{display:flex;}',
     '.fns-chat-head{padding:14px 16px;border-bottom:1px solid var(--border-subtle);background:var(--bg-elevated);}',
-    '.fns-chat-head h4{font-family:var(--font-display);font-size:0.95rem;color:var(--text-primary);margin-bottom:2px;}',
+    '.fns-chat-head h2{font-family:var(--font-display);font-size:0.95rem;color:var(--text-primary);margin-bottom:2px;}',
     '.fns-chat-head p{font-size:0.72rem;color:var(--text-muted);}',
     '.fns-chat-close{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--text-secondary);',
     'cursor:pointer;font-size:1.1rem;line-height:1;}',
@@ -65,7 +65,7 @@
   panel.className = 'fns-chat-panel';
   panel.innerHTML =
     '<div class="fns-chat-head">' +
-      '<h4>Fieldnote Security assistant</h4>' +
+      '<h2>Fieldnote Security assistant</h2>' +
       '<p>AI assistant for general questions - contact us for a full assessment.</p>' +
       '<button class="fns-chat-close" aria-label="Close chat">&times;</button>' +
     '</div>' +
