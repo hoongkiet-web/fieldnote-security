@@ -59,7 +59,7 @@ never cross between them), from `chatbot-worker/`:
 wrangler deploy --env staging
 
 # Production - fieldnotesecurity.com/api/chat
-wrangler deploy --env ""
+wrangler deploy --env production
 ```
 
 See `chatbot-worker/README.md` for the one-time KV namespace setup for
