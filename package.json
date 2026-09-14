@@ -1,0 +1,14 @@
+{
+  "name": "fieldnote-security-website",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.9"
+  }
+}
