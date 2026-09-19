@@ -69,9 +69,9 @@
 
   <section class="page-hero">
     <div class="container">
-      <h1>Six phases. One person reviewing every result.</h1>
-      <p>The scan itself is automated - the same tool runs the same checks every time. What you're paying for is the review that happens after it finishes.</p>
-      <p>An exposed port, an expired certificate, or a forgotten staging subdomain becomes a headline before it becomes a fix. This assessment surfaces what's actually reachable from the outside, so a breach doesn't become the story your customers hear first.</p>
+      <h1>A proper security check-up - plain English, no enterprise price tag.</h1>
+      <p>Six technical phases run in the background - DNS, ports, certificates, headers, known vulnerabilities. What actually lands in your inbox is the plain-English version: what's exposed, why it matters, and what to fix first.</p>
+      <p>I go through every finding myself before it reaches you - no dashboard, no automated score, just one person reviewing the results so an exposed port or a forgotten staging subdomain gets caught and explained, not buried in a raw scan dump.</p>
     </div>
   </section>
 
@@ -85,11 +85,11 @@
       <div class="phase-list reveal">
         <div class="phase-row">
           <div><span class="phase-num">PHASE 01</span><h3>DNS Reconnaissance</h3></div>
-          <p>Full DNS record enumeration (A, AAAA, MX, NS, TXT, SOA) plus subdomain discovery - surfaces forgotten staging environments and services you didn't know were publicly resolvable.</p>
+          <p>A full map of your domain's DNS records (A, AAAA, MX, NS, TXT, SOA) plus a search for forgotten subdomains - the old staging environment or service you didn't know was still publicly visible.</p>
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 02</span><h3>Port Scanning</h3></div>
-          <p>Scans your common service ports, identifies what's listening, and risk-rates each open port - a database port or admin service exposed to the internet is treated differently to an expected 443.</p>
+          <p>Scans your common service ports, identifies what's listening, and risk-rates each one - a database or admin service left open to the internet is flagged as far more serious than the normal, expected web traffic port (443).</p>
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 03</span><h3>SSL/TLS Analysis</h3></div>
@@ -97,7 +97,7 @@
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 04</span><h3>Web Security Headers &amp; Sensitive Paths</h3></div>
-          <p>Checks for six security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) and probes known-sensitive paths - <span class="mono">.env</span> files, exposed <span class="mono">.git</span> directories, backup dumps, admin panels, and API docs left open.</p>
+          <p>Checks for six security headers your browser relies on to keep you safe (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), and probes for commonly-forgotten sensitive files - <span class="mono">.env</span> files, exposed <span class="mono">.git</span> directories, backup dumps, admin panels, and API docs left open to anyone who knows where to look.</p>
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 05</span><h3>CVE Lookup</h3></div>
