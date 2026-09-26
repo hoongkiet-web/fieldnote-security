@@ -723,6 +723,145 @@ section.tight { padding: 40px 0; }
   .phase-row .phase-num { margin-bottom: 4px; }
 }
 
+/* ---------- service comparison table (services) ---------- */
+
+/* Visually hidden but still read by screen readers - used for the table
+   caption and the "Included"/"Not included" text behind each icon, so the
+   two states never rely on color or shape alone. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Below 960px the table scrolls sideways inside its own card, with the
+   feature column pinned so every row stays labelled while scrolling.
+   The region is focusable so keyboard users can scroll it too. */
+.compare-wrap {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.compare-wrap:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+.compare-scroll-hint {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.compare-table {
+  width: 100%;
+  min-width: 700px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9rem;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 12px 10px;
+  border-top: 1px solid var(--bg);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.compare-table thead th {
+  border-top: none;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  vertical-align: bottom;
+}
+
+.compare-table th[scope="row"],
+.compare-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 132px;
+  text-align: left;
+  background: var(--bg-elevated);
+  border-right: 1px solid var(--border);
+}
+.compare-table tbody th[scope="row"] {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+.compare-table thead th:first-child {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-weight: 400;
+}
+
+.compare-yes {
+  display: inline-block;
+  vertical-align: middle;
+  color: var(--accent);
+}
+
+/* Muted bar for "not included" - --text-muted clears 3:1 against the card
+   surface; the hidden "Not included" text carries the meaning for AT. */
+.compare-no {
+  display: inline-block;
+  vertical-align: middle;
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--text-muted);
+}
+
+/* Starting price is a footer band, not another compared feature: no icons,
+   heavier type and a solid top rule so it reads as separate from rows 1-12. */
+.compare-table tfoot th,
+.compare-table tfoot td {
+  border-top: 2px solid var(--border);
+  background: var(--bg);
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-primary);
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.compare-table tfoot th[scope="row"] {
+  background: var(--bg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.compare-price-note {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+@media (min-width: 960px) {
+  .compare-scroll-hint { display: none; }
+  .compare-table { min-width: 0; font-size: 0.95rem; }
+  .compare-table th[scope="row"],
+  .compare-table thead th:first-child { width: 240px; padding-left: 20px; }
+  .compare-table tbody th[scope="row"] { font-size: 0.9rem; }
+}
+
 /* ---------- process strip (services) ---------- */
 
 .process-strip {
