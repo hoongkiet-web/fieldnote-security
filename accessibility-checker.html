@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="shortcut icon" href="favicon.ico">
 <title>Accessibility Checker - Fieldnote Security</title>
-<meta name="description" content="An automated first-pass scan (axe-core, WCAG 2.1 AA) covering the mechanical issues - color contrast, missing alt text, ARIA misuse, heading structure, form labels - plus a manual review for what automated tools can't judge, like reading order and genuine keyboard usability.">
+<meta name="description" content="Automated WCAG 2.1 AA scan plus a manual review for what tools can't judge - reading order, keyboard usability, real screen-reader use.">
+<link rel="canonical" href="https://fieldnotesecurity.com/accessibility-checker.html">
+<script src="js/theme-init.js"></script>
 <link rel="stylesheet" href="css/styles.css">
 
 <script type="application/ld+json">
@@ -22,7 +28,7 @@
   "@context": "https://schema.org",
   "@type": "Service",
   "name": "Accessibility Checker",
-  "description": "An automated first-pass scan (axe-core, WCAG 2.1 AA) covering the mechanical issues - color contrast, missing alt text, ARIA misuse, heading structure, form labels - plus a manual review for what automated tools can't judge, like reading order and genuine keyboard usability.",
+  "description": "Automated WCAG 2.1 AA scan plus a manual review for what tools can't judge - reading order, keyboard usability, real screen-reader use.",
   "provider": {
     "@id": "https://fieldnotesecurity.com/#organization"
   },
@@ -52,6 +58,10 @@
       <a href="about.html">About</a>
       <a href="contact.html" class="btn btn-primary">Request an assessment</a>
     </nav>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Light theme" aria-pressed="false">
+      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
     <button class="mobile-menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileNav" id="menuBtn">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
         <path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>

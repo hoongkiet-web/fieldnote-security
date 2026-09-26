@@ -183,6 +183,43 @@
     }
   }
 
+  // FS-148: theme toggle. js/theme-init.js has already put any saved choice
+  // (localStorage fns_theme) on <html data-theme> before first paint; with no
+  // saved choice the CSS follows prefers-color-scheme. This handles the click,
+  // saves the choice, and keeps aria-pressed ("light theme on") accurate.
+  // Placed before the IntersectionObserver early return so it runs everywhere.
+  var themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    var root = document.documentElement;
+    var osLight = window.matchMedia('(prefers-color-scheme: light)');
+
+    function currentTheme() {
+      var t = root.getAttribute('data-theme');
+      if (t === 'light' || t === 'dark') return t;
+      return osLight.matches ? 'light' : 'dark';
+    }
+    function syncThemeToggle() {
+      themeToggle.setAttribute('aria-pressed', currentTheme() === 'light' ? 'true' : 'false');
+    }
+
+    themeToggle.addEventListener('click', function () {
+      var next = currentTheme() === 'light' ? 'dark' : 'light';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('fns_theme', next); } catch (e) { /* storage blocked: applies to this page view only */ }
+      syncThemeToggle();
+    });
+    // No saved choice means the site follows the OS live - keep the button honest if it flips.
+    osLight.addEventListener('change', syncThemeToggle);
+    // A choice made in another tab applies here too.
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'fns_theme' && (e.newValue === 'light' || e.newValue === 'dark')) {
+        root.setAttribute('data-theme', e.newValue);
+        syncThemeToggle();
+      }
+    });
+    syncThemeToggle();
+  }
+
   if (!('IntersectionObserver' in window)) return;
   document.documentElement.classList.add('js-ready');
 

@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="shortcut icon" href="favicon.ico">
 <title>Services - Fieldnote Security</title>
 <meta name="description" content="What's included in a Fieldnote Security vulnerability assessment: DNS recon, port scanning, SSL/TLS, headers, sensitive paths, CVE lookup - reviewed by hand.">
+<link rel="canonical" href="https://fieldnotesecurity.com/services.html">
+<script src="js/theme-init.js"></script>
 <link rel="stylesheet" href="css/styles.css">
 
 <script type="application/ld+json">
@@ -52,6 +58,10 @@
       <a href="about.html">About</a>
       <a href="contact.html" class="btn btn-primary">Request an assessment</a>
     </nav>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Light theme" aria-pressed="false">
+      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
     <button class="mobile-menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileNav" id="menuBtn">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
         <path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -64,9 +74,9 @@
 
   <section class="page-hero">
     <div class="container">
-      <h1>Six phases. One person reviewing every result.</h1>
-      <p>The scan itself is automated - the same tool runs the same checks every time. What you're paying for is the review that happens after it finishes.</p>
-      <p>An exposed port, an expired certificate, or a forgotten staging subdomain becomes a headline before it becomes a fix. This assessment surfaces what's actually reachable from the outside, so a breach doesn't become the story your customers hear first.</p>
+      <h1>A proper security check-up - plain English, no enterprise price tag.</h1>
+      <p>Six technical phases run in the background - DNS, ports, certificates, headers, known vulnerabilities. What actually lands in your inbox is the plain-English version: what's exposed, why it matters, and what to fix first.</p>
+      <p>I go through every finding myself before it reaches you - no dashboard, no automated score, just one person reviewing the results so an exposed port or a forgotten staging subdomain gets caught and explained, not buried in a raw scan dump.</p>
     </div>
   </section>
 
@@ -80,11 +90,11 @@
       <div class="phase-list reveal">
         <div class="phase-row">
           <div><span class="phase-num">PHASE 01</span><h3>DNS Reconnaissance</h3></div>
-          <p>Full DNS record enumeration (A, AAAA, MX, NS, TXT, SOA) plus subdomain discovery - surfaces forgotten staging environments and services you didn't know were publicly resolvable.</p>
+          <p>A full map of your domain's DNS records (A, AAAA, MX, NS, TXT, SOA) plus a search for forgotten subdomains - the old staging environment or service you didn't know was still publicly visible.</p>
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 02</span><h3>Port Scanning</h3></div>
-          <p>Scans your common service ports, identifies what's listening, and risk-rates each open port - a database port or admin service exposed to the internet is treated differently to an expected 443.</p>
+          <p>Scans your common service ports, identifies what's listening, and risk-rates each one - a database or admin service left open to the internet is flagged as far more serious than the normal, expected web traffic port (443).</p>
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 03</span><h3>SSL/TLS Analysis</h3></div>
@@ -92,7 +102,7 @@
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 04</span><h3>Web Security Headers &amp; Sensitive Paths</h3></div>
-          <p>Checks for six security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) and probes known-sensitive paths - <span class="mono">.env</span> files, exposed <span class="mono">.git</span> directories, backup dumps, admin panels, and API docs left open.</p>
+          <p>Checks for six security headers your browser relies on to keep you safe (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), and probes for commonly-forgotten sensitive files - <span class="mono">.env</span> files, exposed <span class="mono">.git</span> directories, backup dumps, admin panels, and API docs left open to anyone who knows where to look.</p>
         </div>
         <div class="phase-row">
           <div><span class="phase-num">PHASE 05</span><h3>CVE Lookup</h3></div>
@@ -102,6 +112,153 @@
           <div><span class="phase-num">PHASE 06</span><h3>Manual Review &amp; Report</h3></div>
           <p>This is the part a scanner can't do. I go through every finding myself, drop the noise, prioritize what's real, and write it up in plain English.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tight" aria-labelledby="compareHeading">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 id="compareHeading">Compare services</h2>
+        <p>Every service includes a manual review of the results by me, and every report is delivered as a PDF.</p>
+      </div>
+      <p class="compare-scroll-hint" aria-hidden="true">Swipe sideways to compare all six →</p>
+      <div class="compare-wrap reveal" role="region" aria-labelledby="compareCaption" tabindex="0">
+        <table class="compare-table">
+          <caption id="compareCaption" class="sr-only">What each Fieldnote Security service includes, and its starting price</caption>
+          <thead>
+            <tr>
+              <th scope="col">What's checked</th>
+              <th scope="col">Vulnerability Assessment</th>
+              <th scope="col">DNS Health</th>
+              <th scope="col">Email Security</th>
+              <th scope="col">Script Audit</th>
+              <th scope="col">Accessibility</th>
+              <th scope="col">GDPR</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">DNS record &amp; subdomain reconnaissance</th>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Port / attack-surface scan</th>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">SSL/TLS certificate analysis</th>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Security headers &amp; sensitive-path checks</th>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">CVE (known vulnerability) lookup</th>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Overall Risk Score (0-100)</th>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Email authentication check (SPF/<wbr>DKIM/<wbr>DMARC)</th>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Third-party script &amp; tracker inventory</th>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Automated accessibility scan (WCAG 2.1 AA)</th>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Cookie consent, privacy policy &amp; data-retention review</th>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">Structured data-practices questionnaire</th>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+            </tr>
+            <tr>
+              <th scope="row">HTTPS / data-in-transit check</th>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><span class="compare-no" aria-hidden="true"></span><span class="sr-only">Not included</span></td>
+              <td><svg class="compare-yes" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false"><path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Included</span></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row">Starting price</th>
+              <td>From £800</td>
+              <td>£0 <span class="compare-price-note">(bundle)</span></td>
+              <td>£0 <span class="compare-price-note">(bundle)</span></td>
+              <td>From £75</td>
+              <td>From £400 <span class="compare-price-note">(bundle)</span></td>
+              <td>From £400 <span class="compare-price-note">(bundle)</span></td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     </div>
   </section>

@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="shortcut icon" href="favicon.ico">
 <title>Privacy Policy - Fieldnote Security</title>
 <meta name="description" content="What Fieldnote Security collects, why, and how to request access, correction, or deletion of your data.">
+<link rel="canonical" href="https://fieldnotesecurity.com/privacy-policy.html">
+<script src="js/theme-init.js"></script>
 <link rel="stylesheet" href="css/styles.css">
 
 <script type="application/ld+json">
@@ -40,6 +46,10 @@
       <a href="about.html">About</a>
       <a href="contact.html" class="btn btn-primary">Request an assessment</a>
     </nav>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Light theme" aria-pressed="false">
+      <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
     <button class="mobile-menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobileNav" id="menuBtn">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
         <path d="M2 4.5H16M2 9H16M2 13.5H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -61,7 +71,7 @@
     <div class="container">
       <div class="legal-body reveal">
         <!-- TODO: bump to the actual production go-live date before this ships to main - not the staging date it was added on -->
-        <p class="legal-updated">Last updated: 18 August 2026</p>
+        <p class="legal-updated">Last updated: 26 September 2026</p>
 
         <h2>Who this covers</h2>
         <p>Data controller: Fieldnote Security, operated by Kiet Hoong through <span class="legal-placeholder">[COMPANY LEGAL NAME TBC]</span>, a limited company registered in England and Wales (Company No. <span class="legal-placeholder">[COMPANY NUMBER TBC]</span>). For the purposes of UK GDPR, the company is the data controller for any personal data collected through this site or during an engagement. Contact: <a href="mailto:contact@fieldnotesecurity.com">contact@fieldnotesecurity.com</a>.</p>
@@ -98,6 +108,7 @@
         <h2>Cookies and tracking</h2>
         <p>This site does not currently use cookies, analytics, or any tracking technology. If that changes in the future - for example, if analytics is added - this policy will be updated to reflect it before that change goes live.</p>
         <p>The AI chat assistant keeps your conversation visible in your browser only, using your browser's built-in <code>sessionStorage</code> - this is not a cookie and isn't used for tracking or analytics. It's cleared automatically when you close the browser tab, and is never sent anywhere except back to Fieldnote Security's own chatbot service to continue the same conversation.</p>
+        <p>If you use the light/dark theme switch in the site header, your choice is saved in your browser's built-in <code>localStorage</code> under the name <code>fns_theme</code>, holding only the value <code>light</code> or <code>dark</code>, so the site remembers it on your next visit. It is not a cookie, contains no personal data, isn't used for tracking or analytics, and is never sent to Fieldnote Security or anyone else. You can remove it at any time by clearing this site's data in your browser.</p>
 
         <h2>Your rights</h2>
         <p>Under UK GDPR you can ask to access, correct, or delete the personal data held about you, or ask that its use be restricted. To make any of these requests, email <a href="mailto:contact@fieldnotesecurity.com">contact@fieldnotesecurity.com</a>.</p>
