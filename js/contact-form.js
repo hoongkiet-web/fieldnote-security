@@ -9,18 +9,28 @@
   // FS-110: fire-and-forget business-outcome alert. Same env-detection
   // pattern as chatbot-widget.js's ENDPOINT - defaults to the staging
   // Worker for anything that isn't explicitly the production domain.
+  // FS-163: localhost/127.0.0.1 map to a relative /api/monitor so a local
+  // run never reaches the real staging Worker. Chosen by hostname only -
+  // deliberately no override (query param, global, attribute or storage).
   var MONITOR_PRODUCTION_HOSTS = ['fieldnotesecurity.com', 'www.fieldnotesecurity.com'];
+  var MONITOR_LOCAL_HOSTS = ['localhost', '127.0.0.1'];
   var MONITOR_ENDPOINT = MONITOR_PRODUCTION_HOSTS.indexOf(location.hostname) !== -1
     ? 'https://fieldnotesecurity.com/api/monitor'
-    : 'https://fieldnote-security-monitoring-staging.fieldnotesecurity.workers.dev';
+    : MONITOR_LOCAL_HOSTS.indexOf(location.hostname) !== -1
+      ? '/api/monitor'
+      : 'https://fieldnote-security-monitoring-staging.fieldnotesecurity.workers.dev';
   function reportFailure(reason) {
     // Never lets a monitoring-call failure affect the user-facing error
-    // path above it - this is purely "let Kiet know," not part of the
+    // path below it - this is purely "let Kiet know," not part of the
     // form's own success/failure handling.
+    // FS-163: keepalive so the request survives the visitor leaving the
+    // page; text/plain is a CORS-safelisted type, so no preflight is sent
+    // (monitoring-worker parses the body as JSON whatever the type).
     try {
       fetch(MONITOR_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ source: 'contact-form', reason: reason }),
       }).catch(function () {});
     } catch (e) { /* fetch not available or blocked - nothing more to do */ }
@@ -78,11 +88,12 @@
         throw new Error('formspree-status-' + response.status);
       }
     }).catch(function (err) {
+      // FS-163: alert first, so it is already in flight before the error UI.
+      reportFailure(err && err.message ? err.message : 'network-error');
       submitBtn.disabled = false;
       submitBtn.removeAttribute('aria-busy');
       submitBtn.textContent = 'Send request';
       status.textContent = 'Something went wrong sending this - please try again, or email contact@fieldnotesecurity.com directly.';
-      reportFailure(err && err.message ? err.message : 'network-error');
     });
   }));
 })();
