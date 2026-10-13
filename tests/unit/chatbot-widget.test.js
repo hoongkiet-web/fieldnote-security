@@ -106,3 +106,42 @@ describe('chatbot-widget.js: reply-extraction fallback chain (data.reply || data
     );
   });
 });
+
+// FS-170 chunk 3: the endpoint choice by hostname. The real source is run with
+// a stand-in `location` (same approach as monitor-alert.test.js), so the page
+// hostname can be chosen without touching jsdom's own window.location.
+describe('chatbot-widget.js: endpoint by hostname (FS-170 chunk 3)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    document.head.innerHTML = '';
+    delete window.__fnsGuardAgainstReentry;
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
+  });
+
+  it.each([
+    ['fieldnotesecurity.com', 'https://fieldnotesecurity.com/api/chat'],
+    ['www.fieldnotesecurity.com', 'https://fieldnotesecurity.com/api/chat'],
+    ['staging.fieldnotesecurity.com', '/api/chat'],
+    ['localhost', '/api/chat'],
+    ['127.0.0.1', '/api/chat'],
+    ['unknown.example', '/api/chat'],
+  ])('host %s posts to %s, never workers.dev, credentials not omitted', async (hostname, expected) => {
+    const fetchMock = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
+    global.fetch = fetchMock;
+    // eslint-disable-next-line no-eval
+    (0, eval)(FORM_GUARD_SRC);
+    new Function('location', WIDGET_SRC)({ hostname });
+
+    document.querySelector('#fnsChatInput').value = 'Hello';
+    document.querySelector('#fnsChatSend').click();
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(expected);
+    expect(String(url)).not.toContain('workers.dev');
+    expect(init.method).toBe('POST');
+    expect(init.credentials === undefined || init.credentials === 'same-origin' || init.credentials === 'include').toBe(true);
+  });
+});
