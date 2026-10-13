@@ -7,18 +7,16 @@
   if (!form) return;
 
   // FS-110: fire-and-forget business-outcome alert. Same env-detection
-  // pattern as chatbot-widget.js's ENDPOINT - defaults to the staging
-  // Worker for anything that isn't explicitly the production domain.
-  // FS-163: localhost/127.0.0.1 map to a relative /api/monitor so a local
-  // run never reaches the real staging Worker. Chosen by hostname only -
+  // pattern as chatbot-widget.js's ENDPOINT. Chosen by hostname only -
   // deliberately no override (query param, global, attribute or storage).
+  // FS-170 chunk 3: every non-production host (staging, localhost and
+  // 127.0.0.1 as before FS-163, anything else) uses the same-origin relative
+  // /api/monitor. On staging that is the staging monitor's zone route, behind
+  // the Cloudflare Access app; locally it never leaves the machine.
   var MONITOR_PRODUCTION_HOSTS = ['fieldnotesecurity.com', 'www.fieldnotesecurity.com'];
-  var MONITOR_LOCAL_HOSTS = ['localhost', '127.0.0.1'];
   var MONITOR_ENDPOINT = MONITOR_PRODUCTION_HOSTS.indexOf(location.hostname) !== -1
     ? 'https://fieldnotesecurity.com/api/monitor'
-    : MONITOR_LOCAL_HOSTS.indexOf(location.hostname) !== -1
-      ? '/api/monitor'
-      : 'https://fieldnote-security-monitoring-staging.fieldnotesecurity.workers.dev';
+    : '/api/monitor';
   function reportFailure(reason) {
     // Never lets a monitoring-call failure affect the user-facing error
     // path below it - this is purely "let Kiet know," not part of the

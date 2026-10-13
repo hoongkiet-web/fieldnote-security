@@ -19,7 +19,9 @@ const read = (f) => fs.readFileSync(path.resolve(__dirname, '../../js', f), 'utf
 const FORM_GUARD_SRC = read('form-guard.js');
 
 const PRODUCTION_URL = 'https://fieldnotesecurity.com/api/monitor';
-const STAGING_URL = 'https://fieldnote-security-monitoring-staging.fieldnotesecurity.workers.dev';
+// FS-170 chunk 3: every non-production host uses the same-origin relative
+// /api/monitor (staging's zone route behind Cloudflare Access).
+const STAGING_URL = '/api/monitor';
 const ERROR_TEXT = 'Something went wrong sending this - please try again, or email contact@fieldnotesecurity.com directly.';
 
 const FORMS = [
@@ -111,4 +113,21 @@ describe.each(FORMS)('$file monitor alert (FS-163)', (cfg) => {
     expect(btn().disabled).toBe(false);
     expect(btn().textContent).toBe(cfg.buttonText);
   });
+});
+
+// FS-170 chunk 3: no staging workers.dev URL any more, and the monitor call
+// must send the Access cookie on staging, so it must not opt out of
+// same-origin credentials.
+describe.each(FORMS)('$file monitor alert (FS-170 chunk 3)', (cfg) => {
+  it.each(['staging.fieldnotesecurity.com', 'localhost', 'unknown.example'])(
+    'host %s: relative /api/monitor, never workers.dev, credentials not omitted',
+    async (hostname) => {
+      const { monitorCalls } = await submitWith(cfg, { hostname, formspreeResult: { ok: false, status: 599 } });
+      expect(monitorCalls).toHaveLength(1);
+      const [url, init] = monitorCalls[0];
+      expect(url).toBe('/api/monitor');
+      expect(String(url)).not.toContain('workers.dev');
+      expect(init.credentials === undefined || init.credentials === 'same-origin' || init.credentials === 'include').toBe(true);
+    },
+  );
 });
