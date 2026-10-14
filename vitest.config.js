@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 
-// FS-139: deliberately narrower than FS-74's full standard (see TESTING.md).
+// FS-139: deliberately narrower than FS-74's full standard (see TESTING.md, kept
+// in the private scanner repo at docs/website/TESTING.md since FS-169).
 // This covers one specific, previously-untested gap in chatbot-widget.js
 // (the reply-extraction fallback chain), not the whole website repo's JS -
 // no 60% coverage gate is set here, since most of js/*.js (main.js,

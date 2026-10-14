@@ -1,2 +1,13 @@
 .impeccable/hook.cache.json
 node_modules/
+
+# FS-169 (14 Oct 2026): internal files are NOT tracked here - this repo is public and
+# GitHub Pages (.nojekyll) serves every tracked file on fieldnotesecurity.com. They stay
+# on disk for local tools (Claude Code reads .claude/ from disk; design tools read the
+# docs). Maintained copies of the four docs: the private scanner repo, docs/website/.
+.claude/
+.impeccable/
+WORKFLOW.md
+PRODUCT.md
+DESIGN.md
+TESTING.md
