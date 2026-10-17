@@ -6,15 +6,15 @@
 (function () {
   // Auto-detects environment by hostname so this same file works
   // correctly on both staging and production without needing an edit
-  // (and possibly forgetting to revert it) at merge time. Defaults to
-  // the staging Worker for anything that isn't explicitly the
-  // production domain - covers staging.fieldnotesecurity.com once its
-  // DNS is live, but also the interim hoongkiet-web.github.io/
-  // fieldnote-security-staging/ fallback URL and local testing.
+  // (and possibly forgetting to revert it) at merge time.
+  // FS-170 chunk 3: every non-production host (staging.fieldnotesecurity.com,
+  // localhost, anything else) calls the same-origin relative /api/chat. On
+  // staging that is the staging chatbot's zone route, behind the Cloudflare
+  // Access app; the staging workers.dev URL is gone (FS-170 chunk 1).
   var PRODUCTION_HOSTS = ['fieldnotesecurity.com', 'www.fieldnotesecurity.com'];
   var ENDPOINT = PRODUCTION_HOSTS.indexOf(location.hostname) !== -1
     ? 'https://fieldnotesecurity.com/api/chat'
-    : 'https://fieldnote-security-chatbot-staging.fieldnotesecurity.workers.dev';
+    : '/api/chat';
   var STORAGE_KEY = 'fns_chat_history';
   var history = [];
 

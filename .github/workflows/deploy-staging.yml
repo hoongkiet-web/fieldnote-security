@@ -46,6 +46,13 @@ jobs:
           external_repository: hoongkiet-web/fieldnote-security-staging
           publish_branch: gh-pages
           publish_dir: .
+          # FS-169: never publish internal files to the public staging repo,
+          # even if one is added to this repo later. Comma-separated globs,
+          # relative to publish_dir, deleted after the copy (peaceiris v4
+          # deleteExcludedAssets). Keeps the action's default `.github`.
+          # .nojekyll, .well-known/, CNAME, robots.txt and the site files
+          # are still published.
+          exclude_assets: '.github,.claude,.impeccable,.gitignore,*.md,tests,node_modules,package.json,package-lock.json,vitest.config.js'
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
 

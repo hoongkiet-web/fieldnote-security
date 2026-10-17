@@ -16,13 +16,12 @@
 
   // FS-110: fire-and-forget business-outcome alert - see contact-form.js
   // for the identical pattern/reasoning.
+  // FS-170 chunk 3: every non-production host uses the same-origin relative
+  // /api/monitor (see contact-form.js).
   var MONITOR_PRODUCTION_HOSTS = ['fieldnotesecurity.com', 'www.fieldnotesecurity.com'];
-  var MONITOR_LOCAL_HOSTS = ['localhost', '127.0.0.1'];
   var MONITOR_ENDPOINT = MONITOR_PRODUCTION_HOSTS.indexOf(location.hostname) !== -1
     ? 'https://fieldnotesecurity.com/api/monitor'
-    : MONITOR_LOCAL_HOSTS.indexOf(location.hostname) !== -1
-      ? '/api/monitor'
-      : 'https://fieldnote-security-monitoring-staging.fieldnotesecurity.workers.dev';
+    : '/api/monitor';
   function reportFailure(reason) {
     try {
       fetch(MONITOR_ENDPOINT, {
