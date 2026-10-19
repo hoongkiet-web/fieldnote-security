@@ -1,0 +1,28 @@
+#!/bin/sh
+# Blocks commits that contain secrets. This repo is public and GitHub Pages
+# publishes every tracked file, so a committed secret goes live.
+#
+# Enable once per clone:   git config core.hooksPath .githooks
+# Bypass only for a confirmed false positive:   git commit --no-verify
+set -eu
+
+# 1. Secret-type files by name, even if .gitignore was bypassed (git add -f).
+blocked=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '(^|/)(\.env(\..*)?|\.dev\.vars.*|[^/]*\.(pem|key|p12|pfx|jks|keystore|har)|credentials[^/]*\.json|service-account[^/]*\.json)$' \
+  | grep -v -E '(^|/)\.env\.example$' || true)
+if [ -n "$blocked" ]; then
+  echo "pre-commit: refusing to commit secret-type files:" >&2
+  echo "$blocked" | sed 's/^/  /' >&2
+  exit 1
+fi
+
+# 2. Staged content, scanned by gitleaks (findings shown redacted).
+if command -v gitleaks >/dev/null 2>&1; then
+  if ! gitleaks git --pre-commit --staged --redact --no-banner --verbose .; then
+    echo "pre-commit: gitleaks found a possible secret (redacted above). Commit blocked." >&2
+    exit 1
+  fi
+else
+  echo "pre-commit: gitleaks is not installed, so only the file-name check ran." >&2
+  echo "  Install it on Windows with:  winget install Gitleaks.Gitleaks" >&2
+fi
