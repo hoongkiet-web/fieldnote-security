@@ -71,13 +71,14 @@
     <div class="container">
       <div class="legal-body reveal">
         <!-- TODO: bump to the actual production go-live date before this ships to main - not the staging date it was added on -->
-        <p class="legal-updated">Last updated: 26 September 2026</p>
+        <p class="legal-updated">Last updated: 21 October 2026</p>
 
         <h2>Who this covers</h2>
         <p>Data controller: Fieldnote Security, operated by Kiet Hoong through <span class="legal-placeholder">[COMPANY LEGAL NAME TBC]</span>, a limited company registered in England and Wales (Company No. <span class="legal-placeholder">[COMPANY NUMBER TBC]</span>). For the purposes of UK GDPR, the company is the data controller for any personal data collected through this site or during an engagement. Contact: <a href="mailto:contact@fieldnotesecurity.com">contact@fieldnotesecurity.com</a>.</p>
 
         <h2>What data is collected</h2>
         <ul>
+          <li>When you visit this site: your IP address and basic request details (such as the page requested, your browser type and approximate location), processed by the site's hosting and security providers to deliver the site and protect it from abuse (see <em>Third parties</em> below).</li>
           <li>Name, email address, company name, and domain/website URL submitted through the contact form on this site.</li>
           <li>Any message or context you add to that form.</li>
           <li>During a paid engagement: the domain(s) and target(s) you authorize for scanning, and the technical findings that scan produces (DNS records, open ports, headers, and similar data about the target, not about you personally).</li>
@@ -89,6 +90,7 @@
           <li><strong>Contract necessity</strong> - to deliver the assessment or report you've requested, once an engagement is agreed.</li>
           <li><strong>Consent</strong> - for the contact form submission itself, which you give by completing and sending it.</li>
           <li><strong>Legitimate interest</strong> - for the AI chat assistant's IP-based rate limit, which exists to prevent abuse of the service (e.g. automated spam or excessive use that could affect its availability for other visitors). You have the right to object to this - if you'd prefer this isn't collected, you can choose not to use the chat assistant.</li>
+          <li><strong>Legitimate interest</strong> - for delivering this site and protecting it from abuse (for example rate limiting and bot protection), which requires your IP address and basic request details to be processed when you visit.</li>
         </ul>
 
         <h2>How long it's kept</h2>
@@ -96,14 +98,15 @@
           <li><strong>Final client reports and authorization forms:</strong> retained for 6 years, matching the UK Limitation Act 1980 standard limitation period for contract claims.</li>
           <li><strong>Raw scan data</strong> (detailed technical output, JSON artifacts): retained for 12 months following report delivery, then deleted.</li>
           <li><strong>Free-tier scan submissions</strong> from prospects who did not become paying clients: retained for 12 months, then deleted if no engagement followed.</li>
-          <li><strong>AI chat assistant:</strong> your IP address is held for up to 1 hour in a rate-limit counter, then automatically deleted - this is the only thing stored. The content of your messages is not logged or stored by Fieldnote Security; it is sent to Cloudflare Workers AI (see <em>Third parties</em> below) only to generate a reply, and is not kept afterwards.</li>
+          <li><strong>AI chat assistant:</strong> your IP address is held for up to 1 hour in a rate-limit counter, then automatically deleted - this is the only thing the chat service stores. The content of your messages is not logged or stored by Fieldnote Security; it is sent to Cloudflare Workers AI (see <em>Third parties</em> below) only to generate a reply, and is not kept afterwards.</li>
         </ul>
         <p>Data is deleted, not just archived, at the end of each period above. You can request earlier deletion at any time by contacting <a href="mailto:contact@fieldnotesecurity.com">contact@fieldnotesecurity.com</a>, subject to the exceptions above where retention supports a legal or contractual purpose.</p>
 
         <h2>Third parties</h2>
+        <p>This site is hosted on GitHub Pages and delivered through Cloudflare, which also provides its security protections (such as rate limiting and bot protection). Like any web host, they process your IP address and basic request details when you visit, to deliver the site and protect it from abuse, and keep this in short-lived operational logs under their own policies: the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement</a> and <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare's Privacy Policy</a>. Fieldnote Security does not use this data to identify or track visitors.</p>
         <p>The contact form on this site is processed by <a href="https://formspree.io" target="_blank" rel="noopener noreferrer">Formspree</a>, a third-party form-handling service. Submitting the form sends your details to Formspree's infrastructure before they reach the company. Formspree's own handling of that data is governed by <a href="https://formspree.io/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Formspree's Privacy Policy</a>.</p>
         <p>If you use the AI chat assistant, your message is sent to <a href="https://www.cloudflare.com/trust-hub/" target="_blank" rel="noopener noreferrer">Cloudflare Workers AI</a> to generate a reply. Cloudflare's own handling of that data is governed by <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare's Privacy Policy</a>.</p>
-        <p>No other third party receives data collected through this site.</p>
+        <p>Apart from the services above, no other third party receives data collected through this site.</p>
 
         <h2>Cookies and tracking</h2>
         <p>This site does not currently use cookies, analytics, or any tracking technology. If that changes in the future - for example, if analytics is added - this policy will be updated to reflect it before that change goes live.</p>
