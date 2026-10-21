@@ -11,3 +11,21 @@ WORKFLOW.md
 PRODUCT.md
 DESIGN.md
 TESTING.md
+
+# Secrets: never commit. GitHub Pages serves every tracked file on
+# fieldnotesecurity.com, so a stray secret file here goes live.
+# .githooks/pre-commit blocks these names too, even with `git add -f`.
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.har
+credentials*.json
+service-account*.json

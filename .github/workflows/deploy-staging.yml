@@ -52,7 +52,7 @@ jobs:
           # deleteExcludedAssets). Keeps the action's default `.github`.
           # .nojekyll, .well-known/, CNAME, robots.txt and the site files
           # are still published.
-          exclude_assets: '.github,.claude,.impeccable,.gitignore,*.md,tests,node_modules,package.json,package-lock.json,vitest.config.js'
+          exclude_assets: '.github,.githooks,.claude,.impeccable,.gitignore,*.md,tests,node_modules,package.json,package-lock.json,vitest.config.js'
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
 
