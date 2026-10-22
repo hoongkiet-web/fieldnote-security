@@ -224,7 +224,9 @@
     return fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, history: history.slice(0, -1) }),
+      // Only the last 6 earlier turns go in the request (the worker caps it too);
+      // the panel still shows the whole conversation.
+      body: JSON.stringify({ message: text, history: history.slice(0, -1).slice(-6) }),
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
