@@ -87,7 +87,7 @@
 
           <div class="field">
             <label for="repTitle">Job title</label>
-            <input type="text" id="repTitle" name="repTitle" placeholder="e.g. IT Director" required>
+            <input type="text" id="repTitle" name="repTitle" autocomplete="organization-title" placeholder="e.g. IT Director" required>
           </div>
 
           <div class="field">
@@ -105,7 +105,7 @@
             <textarea id="targets" name="targets" placeholder="e.g. company.com, staging.company.com" required></textarea>
           </div>
 
-          <fieldset class="field checkbox-group-field">
+          <fieldset class="field checkbox-group-field" aria-describedby="formStatus">
             <legend>Services authorized</legend>
             <div class="checkbox-group">
               <label class="checkbox-option">
