@@ -301,3 +301,85 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     expect(css).toMatch(/\.fns-chat-input\{[^}]*border:1px solid var\(--field-border\)/);
   });
 });
+
+// a11y chunk 3: focus stays in the chat while a reply is pending (F4), and the
+// close button is a 44 px target (B3). fetch is always a mock.
+describe('chatbot-widget.js: focus during send and close target (a11y chunk 3)', () => {
+  let resolveFetch;
+  beforeEach(() => {
+    document.body.innerHTML = '<main></main><footer></footer>';
+    document.head.innerHTML = '';
+    delete window.__fnsGuardAgainstReentry;
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
+    global.fetch = vi.fn(() => new Promise((r) => { resolveFetch = r; }));
+  });
+
+  const els = () => ({
+    input: document.querySelector('#fnsChatInput'),
+    send: document.querySelector('#fnsChatSend'),
+    form: document.querySelector('#fnsChatForm'),
+  });
+  // Open the panel (focus goes to the textarea), type, press Enter: the keyboard path.
+  function sendWithEnter(text) {
+    document.querySelector('.fns-chat-btn').click();
+    const { input } = els();
+    input.value = text;
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+  }
+
+  it('while the reply is pending, focus stays on the textarea, it is read-only, send is aria-disabled and the form is busy', () => {
+    loadWidget();
+    sendWithEnter('Hello');
+    const { input, send, form } = els();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(input);
+    expect(input.readOnly).toBe(true);
+    expect(input.disabled).toBe(false);
+    expect(send.getAttribute('aria-disabled')).toBe('true');
+    expect(send.disabled).toBe(false);
+    expect(form.getAttribute('aria-busy')).toBe('true');
+  });
+
+  it('after the reply, the textarea is editable again, aria-disabled and aria-busy are gone, focus is on the textarea', async () => {
+    loadWidget();
+    sendWithEnter('Hello');
+    resolveFetch({ json: () => Promise.resolve({ reply: 'done' }) });
+    const { input, send, form } = els();
+    await vi.waitFor(() => expect(input.readOnly).toBe(false));
+    expect(send.hasAttribute('aria-disabled')).toBe(false);
+    expect(form.hasAttribute('aria-busy')).toBe(false);
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('the same reset happens after a failed request', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+    loadWidget();
+    sendWithEnter('Hello');
+    const { input, send, form } = els();
+    await vi.waitFor(() => expect(input.readOnly).toBe(false));
+    expect(send.hasAttribute('aria-disabled')).toBe(false);
+    expect(form.hasAttribute('aria-busy')).toBe(false);
+  });
+
+  it('a second submit while the first is pending does not call fetch again (Send click and Enter)', () => {
+    loadWidget();
+    sendWithEnter('First');
+    const { input, send } = els();
+    input.value = 'Second';
+    send.click();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('the close button is a 44 x 44 px flex-centred target, and the send style also matches aria-disabled', () => {
+    loadWidget();
+    const css = document.head.querySelector('style').textContent;
+    const close = css.match(/\.fns-chat-close\{([^}]*)\}/)[1];
+    for (const decl of ['width:44px', 'height:44px', 'display:flex', 'align-items:center', 'justify-content:center', 'top:2px', 'right:2px']) {
+      expect(close).toContain(decl);
+    }
+    expect(css).toContain('.fns-chat-send:disabled,.fns-chat-send[aria-disabled="true"]{opacity:0.5;cursor:not-allowed;}');
+  });
+});

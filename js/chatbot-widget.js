@@ -35,11 +35,11 @@
     'border-radius:12px;box-shadow:0 12px 40px var(--shadow-strong);z-index:9999;display:none;flex-direction:column;',
     'font-family:var(--font-body);overflow:hidden;}',
     '.fns-chat-panel.open{display:flex;}',
-    '.fns-chat-head{padding:14px 16px;border-bottom:1px solid var(--border-subtle);background:var(--bg-elevated);}',
+    '.fns-chat-head{padding:14px 48px 14px 16px;border-bottom:1px solid var(--border-subtle);background:var(--bg-elevated);}',
     '.fns-chat-head h2{font-family:var(--font-display);font-size:0.95rem;color:var(--text-primary);margin-bottom:2px;}',
     '.fns-chat-head p{font-size:0.72rem;color:var(--text-secondary);}',
-    '.fns-chat-close{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--text-secondary);',
-    'cursor:pointer;font-size:1.1rem;line-height:1;}',
+    '.fns-chat-close{position:absolute;top:2px;right:2px;width:44px;height:44px;display:flex;align-items:center;',
+    'justify-content:center;background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1.1rem;line-height:1;}',
     '.fns-chat-body{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;}',
     '.fns-msg{max-width:85%;padding:8px 12px;border-radius:10px;font-size:0.86rem;line-height:1.5;}',
     '.fns-msg-user{align-self:flex-end;background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--text-primary);}',
@@ -51,7 +51,7 @@
     '.fns-chat-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}',
     '.fns-chat-send{background:var(--accent);border:none;border-radius:8px;padding:0 14px;color:var(--on-accent);',
     'font-weight:600;font-size:0.85rem;cursor:pointer;}',
-    '.fns-chat-send:disabled{opacity:0.5;cursor:not-allowed;}',
+    '.fns-chat-send:disabled,.fns-chat-send[aria-disabled="true"]{opacity:0.5;cursor:not-allowed;}',
     '.fns-chat-disclaimer{font-size:0.66rem;color:var(--text-secondary);padding:0 16px 10px;}',
   ].join('');
   document.head.appendChild(style);
@@ -238,8 +238,11 @@
     history.push({ role: 'user', content: text });
     persist();
     input.value = '';
-    input.disabled = true;
-    sendBtn.disabled = true;
+    // Not disabled: disabling the focused control drops focus to <body> (WCAG 2.4.3).
+    // The re-entry guard above already blocks a second submit while this one is pending.
+    input.readOnly = true;
+    sendBtn.setAttribute('aria-disabled', 'true');
+    form.setAttribute('aria-busy', 'true');
     statusEl.textContent = 'Assistant is replying';
 
     return fetch(ENDPOINT, {
@@ -262,8 +265,9 @@
         renderMessage('assistant', "Something went wrong - please try again, or email contact@fieldnotesecurity.com.");
       })
       .finally(function () {
-        input.disabled = false;
-        sendBtn.disabled = false;
+        input.readOnly = false;
+        sendBtn.removeAttribute('aria-disabled');
+        form.removeAttribute('aria-busy');
         input.focus();
       });
   }));
