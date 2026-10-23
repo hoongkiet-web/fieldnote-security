@@ -373,6 +373,27 @@ describe('chatbot-widget.js: focus during send and close target (a11y chunk 3)',
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
+  // The re-entry guard drops a second submit without calling preventDefault, and
+  // since chunk 3 Send and the textarea stay usable while a reply is pending, so
+  // the widget must cancel the native submission itself: otherwise the browser
+  // submits the chat form (a GET to the current page) and the page reloads.
+  it('every submit is default-prevented, including the ones dropped while a reply is pending', () => {
+    const seen = [];
+    const record = (e) => seen.push(e.defaultPrevented);
+    window.addEventListener('submit', record);
+    try {
+      loadWidget();
+      sendWithEnter('First');
+      const { input, send } = els();
+      input.value = 'Second';
+      send.click();
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    } finally {
+      window.removeEventListener('submit', record);
+    }
+    expect(seen).toEqual([true, true, true]);
+  });
+
   it('the close button is a 44 x 44 px flex-centred target, and the send style also matches aria-disabled', () => {
     loadWidget();
     const css = document.head.querySelector('style').textContent;

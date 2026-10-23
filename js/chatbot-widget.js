@@ -229,6 +229,12 @@
     isOpen: function () { return panel.classList.contains('open'); },
   };
 
+  // Always cancel the native submission. The re-entry guard below drops a second
+  // submit without calling preventDefault, and Send and the textarea stay usable
+  // while a reply is pending (aria-disabled / readOnly), so without this a second
+  // Enter or click would submit the form natively and reload the page.
+  form.addEventListener('submit', function (e) { e.preventDefault(); });
+
   form.addEventListener('submit', window.__fnsGuardAgainstReentry(function (e) {
     e.preventDefault();
     var text = input.value.trim();
