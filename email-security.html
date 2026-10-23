@@ -37,6 +37,7 @@
 </script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to main content</a>
 
 <header class="site-header">
   <div class="container nav-row">
@@ -70,7 +71,7 @@
   </div>
 </header>
 
-<main>
+<main id="main" tabindex="-1">
 
   <section class="page-hero">
     <div class="container">
@@ -112,9 +113,9 @@
       </div>
       <div class="process-strip reveal">
         <strong>You submit your domain</strong>
-        <span class="arrow">→</span>
+        <span class="arrow" aria-hidden="true">→</span>
         <strong>I run the scan and review it</strong>
-        <span class="arrow">→</span>
+        <span class="arrow" aria-hidden="true">→</span>
         <strong>You get a prioritized report with the exact DNS records to add</strong>
       </div>
     </div>

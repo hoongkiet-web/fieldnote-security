@@ -379,6 +379,32 @@ h1, h2, h3 {
 }
 .btn-primary:hover { background: var(--accent-hover); }
 
+/* Skip link (WCAG 2.4.1): first element in <body> on every page. Off-screen
+   until focused, then top-left above the sticky header (z-index 40), styled
+   like .btn.btn-primary. */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  transform: translateY(-200%);
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 11px 20px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--on-accent);
+  text-decoration: none;
+}
+.skip-link:focus {
+  transform: none;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--text-primary);
+}
+
 .btn-ghost {
   background: transparent;
   border-color: var(--border);
@@ -859,7 +885,8 @@ section.tight { padding: 40px 0; }
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-.compare-wrap:focus-visible {
+.compare-wrap:focus-visible,
+.report-section-body:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--accent);
 }
@@ -982,7 +1009,7 @@ section.tight { padding: 40px 0; }
   color: var(--text-secondary);
 }
 .process-strip strong { color: var(--text-primary); font-weight: 600; }
-.process-strip .arrow { color: var(--text-muted); }
+.process-strip .arrow { color: var(--text-secondary); }
 
 /* ---------- pull statement ---------- */
 

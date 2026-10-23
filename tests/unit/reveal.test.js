@@ -86,3 +86,36 @@ describe('main.js reveal-on-scroll (WCAG 1.4.10)', () => {
     expect(document.documentElement.classList.contains('js-ready')).toBe(false);
   });
 });
+
+// a11y chunk 5 (B2): Escape closes the open mobile menu and focus returns to #menuBtn.
+describe('main.js mobile menu Escape', () => {
+  beforeEach(() => {
+    mockMatchMedia(false);
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    document.body.innerHTML =
+      '<header><button id="menuBtn" aria-expanded="false">Menu</button>' +
+      '<nav><ul class="nav-links"><li><a href="/services.html">Services</a></li></ul></nav></header>' +
+      '<main id="main" tabindex="-1"></main><footer></footer>';
+    loadMain();
+  });
+
+  it('Escape closes the open menu, sets aria-expanded false and focuses #menuBtn', () => {
+    const btn = document.getElementById('menuBtn');
+    const links = document.querySelector('.nav-links');
+    btn.click();
+    expect(links.classList.contains('mobile-open')).toBe(true);
+    expect(document.activeElement).toBe(links.querySelector('a'));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(links.classList.contains('mobile-open')).toBe(false);
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(btn);
+  });
+
+  it('Escape with the menu closed does nothing (focus stays where it was)', () => {
+    const mainEl = document.getElementById('main');
+    mainEl.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(document.activeElement).toBe(mainEl);
+  });
+});

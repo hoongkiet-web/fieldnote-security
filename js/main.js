@@ -64,6 +64,11 @@
       else openMenu();
     });
 
+    // Escape closes the open mobile menu; closeMenu() returns focus to #menuBtn.
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && navLinks.classList.contains('mobile-open')) closeMenu();
+    });
+
     // FS-133: exposed so chatbot-widget.js can close this menu before
     // opening the chat panel (mutual exclusion - see openMenu() above).
     // Both scripts load via <script defer>, executing in document order
