@@ -220,7 +220,10 @@
     syncThemeToggle();
   }
 
+  // No js-ready means .reveal content is simply visible: no observer support,
+  // or the visitor asked for reduced motion (nothing to animate, so nothing to hide).
   if (!('IntersectionObserver' in window)) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   document.documentElement.classList.add('js-ready');
 
   var els = document.querySelectorAll('.reveal');
@@ -231,6 +234,8 @@
         io.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+    // Threshold 0: a block taller than a few viewports (e.g. at 400% zoom) can
+    // never be 20% visible, so any visible pixel reveals it (WCAG 1.4.10).
+  }, { threshold: 0, rootMargin: '0px' });
   els.forEach(function (el) { io.observe(el); });
 })();
