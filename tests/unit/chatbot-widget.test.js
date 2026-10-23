@@ -34,9 +34,12 @@ function loadWidget() {
   (0, eval)(WIDGET_SRC);
 }
 
+// The visible message text: since a11y chunk 2 each message starts with a
+// screen-reader-only speaker label (asserted separately below), so read the
+// message's own text node rather than the whole element's textContent.
 function lastBotMessageText() {
   const messages = document.querySelectorAll('.fns-msg-bot');
-  return messages[messages.length - 1].textContent;
+  return messages[messages.length - 1].lastChild.textContent;
 }
 
 async function sendMessageAndGetMockedResponse(mockResponse) {
@@ -173,5 +176,128 @@ describe('chatbot-widget.js: endpoint by hostname (FS-170 chunk 3)', () => {
     expect(String(url)).not.toContain('workers.dev');
     expect(init.method).toBe('POST');
     expect(init.credentials === undefined || init.credentials === 'same-origin' || init.credentials === 'include').toBe(true);
+  });
+});
+
+// a11y chunk 2: dialog semantics (F7), live region (F2), speaker labels (F10),
+// input border token (F6). fetch is always a mock; nothing reaches a live endpoint.
+describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<main></main><footer></footer>';
+    document.head.innerHTML = '';
+    delete window.__fnsGuardAgainstReentry;
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
+  });
+
+  const launcher = () => document.querySelector('.fns-chat-btn');
+  const panel = () => document.querySelector('.fns-chat-panel');
+
+  it('the panel is a labelled modal dialog and the launcher controls it', () => {
+    loadWidget();
+    const p = panel();
+    expect(p.id).toBe('fnsChatPanel');
+    expect(p.getAttribute('role')).toBe('dialog');
+    expect(p.getAttribute('aria-modal')).toBe('true');
+    const title = document.getElementById(p.getAttribute('aria-labelledby'));
+    expect(title.tagName).toBe('H2');
+    expect(title.textContent).toBe('Fieldnote Security assistant');
+    expect(launcher().getAttribute('aria-controls')).toBe('fnsChatPanel');
+    expect(launcher().getAttribute('aria-label')).toBe('Chat assistant');
+    expect(launcher().getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('aria-expanded follows open and close by launcher click, Escape and the close button', () => {
+    loadWidget();
+    const expanded = () => launcher().getAttribute('aria-expanded');
+    launcher().click();
+    expect(expanded()).toBe('true');
+    launcher().click();
+    expect(expanded()).toBe('false');
+    launcher().click();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(expanded()).toBe('false');
+    launcher().click();
+    expect(expanded()).toBe('true');
+    document.querySelector('.fns-chat-close').click();
+    expect(expanded()).toBe('false');
+  });
+
+  it('#fnsChatBody becomes a polite log only after the restored history is rendered', () => {
+    sessionStorage.setItem('fns_chat_history', JSON.stringify([
+      { role: 'user', content: 'earlier question' },
+      { role: 'assistant', content: 'earlier answer' },
+    ]));
+    // Record the moment each restored message is appended: the body must not be a live region yet.
+    const seen = [];
+    const original = Element.prototype.appendChild;
+    const spy = vi.spyOn(Element.prototype, 'appendChild').mockImplementation(function (child) {
+      if (this.id === 'fnsChatBody') seen.push(this.getAttribute('role'));
+      return original.call(this, child);
+    });
+    loadWidget();
+    spy.mockRestore();
+    expect(seen).toEqual([null, null]);
+    const body = document.getElementById('fnsChatBody');
+    expect(body.getAttribute('role')).toBe('log');
+    expect(body.getAttribute('aria-live')).toBe('polite');
+    expect(body.getAttribute('aria-label')).toBe('Conversation');
+    expect(body.querySelectorAll('.fns-msg')).toHaveLength(2);
+  });
+
+  it('a mocked reply appends a message with the "Assistant: " label; the user message has "You said: "', async () => {
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'Hello there';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    const bot = document.querySelectorAll('.fns-msg-bot')[1];
+    expect(bot.querySelector('.sr-only').textContent).toBe('Assistant: ');
+    expect(bot.textContent).toBe('Assistant: ok');
+    const user = document.querySelector('.fns-msg-user');
+    expect(user.querySelector('.sr-only').textContent).toBe('You said: ');
+    expect(user.lastChild.nodeType).toBe(Node.TEXT_NODE);
+    expect(user.lastChild.textContent).toBe('Hello there');
+  });
+
+  it('message text is never parsed as HTML', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: '<img src=x onerror=alert(1)>' }) });
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = '<b>bold</b>';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    expect(document.querySelector('#fnsChatBody img')).toBeNull();
+    expect(document.querySelector('#fnsChatBody b')).toBeNull();
+  });
+
+  it('the status element says "Assistant is replying" while waiting and is cleared after the reply', async () => {
+    let resolve;
+    global.fetch = vi.fn(() => new Promise((r) => { resolve = r; }));
+    loadWidget();
+    const status = document.getElementById('fnsChatStatus');
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.classList.contains('sr-only')).toBe(true);
+    expect(panel().contains(status)).toBe(true);
+    document.querySelector('#fnsChatInput').value = 'Hi';
+    document.querySelector('#fnsChatSend').click();
+    expect(status.textContent).toBe('Assistant is replying');
+    resolve({ json: () => Promise.resolve({ reply: 'done' }) });
+    await vi.waitFor(() => expect(status.textContent).toBe(''));
+  });
+
+  it('the status element is cleared when the request fails too', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'Hi';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    expect(document.getElementById('fnsChatStatus').textContent).toBe('');
+  });
+
+  it('the injected style gives .fns-chat-input a var(--field-border) border', () => {
+    loadWidget();
+    const css = document.head.querySelector('style').textContent;
+    expect(css).toMatch(/\.fns-chat-input\{[^}]*border:1px solid var\(--field-border\)/);
   });
 });

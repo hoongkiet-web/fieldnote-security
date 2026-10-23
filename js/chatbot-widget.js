@@ -46,7 +46,7 @@
     '.fns-msg-bot{align-self:flex-start;background:var(--bg);border:1px solid var(--border-subtle);color:var(--text-primary);}',
     '.fns-msg-bot a{text-decoration:underline;}',
     '.fns-chat-form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border-subtle);}',
-    '.fns-chat-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);',
+    '.fns-chat-input{flex:1;background:var(--bg);border:1px solid var(--field-border);border-radius:8px;color:var(--text-primary);',
     'padding:8px 10px;font-size:0.85rem;font-family:var(--font-body);resize:none;}',
     '.fns-chat-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}',
     '.fns-chat-send{background:var(--accent);border:none;border-radius:8px;padding:0 14px;color:var(--on-accent);',
@@ -58,18 +58,26 @@
 
   var btn = document.createElement('button');
   btn.className = 'fns-chat-btn';
-  btn.setAttribute('aria-label', 'Open chat assistant');
+  // The open/closed state is announced from aria-expanded, so the label names the control only.
+  btn.setAttribute('aria-label', 'Chat assistant');
+  btn.setAttribute('aria-controls', 'fnsChatPanel');
+  btn.setAttribute('aria-expanded', 'false');
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
 
   var panel = document.createElement('div');
   panel.className = 'fns-chat-panel';
+  panel.id = 'fnsChatPanel';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('aria-labelledby', 'fnsChatTitle');
   panel.innerHTML =
     '<div class="fns-chat-head">' +
-      '<h2>Fieldnote Security assistant</h2>' +
+      '<h2 id="fnsChatTitle">Fieldnote Security assistant</h2>' +
       '<p>AI assistant for general questions - contact us for a full assessment.</p>' +
       '<button class="fns-chat-close" aria-label="Close chat">&times;</button>' +
     '</div>' +
     '<div class="fns-chat-body" id="fnsChatBody"></div>' +
+    '<div class="sr-only" role="status" id="fnsChatStatus"></div>' +
     '<form class="fns-chat-form" id="fnsChatForm">' +
       '<textarea class="fns-chat-input" id="fnsChatInput" rows="1" maxlength="800" placeholder="Ask about services, pricing..." aria-label="Message"></textarea>' +
       '<button type="submit" class="fns-chat-send" id="fnsChatSend">Send</button>' +
@@ -84,6 +92,7 @@
   var input = panel.querySelector('#fnsChatInput');
   var sendBtn = panel.querySelector('#fnsChatSend');
   var closeBtn = panel.querySelector('.fns-chat-close');
+  var statusEl = panel.querySelector('#fnsChatStatus');
 
   // FS-133: background the open panel overlays, for the same inert-based
   // trap FS-50 already uses for the mobile menu (js/main.js). Deliberately
@@ -111,12 +120,14 @@
       window.__fnsMobileMenu.close();
     }
     panel.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
     setChatBackgroundInert(true);
     input.focus();
   }
 
   function closePanel() {
     panel.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
     setChatBackgroundInert(false);
     // FS-133: explicit, not incidental - matches every other close path
     // (Escape, the close button) so focus never gets lost to <body>
@@ -180,7 +191,12 @@
   function renderMessage(role, text) {
     var el = document.createElement('div');
     el.className = 'fns-msg ' + (role === 'user' ? 'fns-msg-user' : 'fns-msg-bot');
-    el.textContent = text;
+    // Who said it, for screen readers; the message itself stays a plain text node (never innerHTML).
+    var speaker = document.createElement('span');
+    speaker.className = 'sr-only';
+    speaker.textContent = role === 'user' ? 'You said: ' : 'Assistant: ';
+    el.appendChild(speaker);
+    el.appendChild(document.createTextNode(text));
     body.appendChild(el);
     body.scrollTop = body.scrollHeight;
   }
@@ -193,6 +209,10 @@
   if (history.length === 0) {
     renderMessage('assistant', "Hi - I can answer questions about Fieldnote Security's services, pricing, or general cybersecurity topics. What would you like to know?");
   }
+  // Made a live region only now, so the restored history and greeting are not re-announced on page load.
+  body.setAttribute('role', 'log');
+  body.setAttribute('aria-live', 'polite');
+  body.setAttribute('aria-label', 'Conversation');
 
   btn.addEventListener('click', function () {
     if (panel.classList.contains('open')) closePanel();
@@ -220,6 +240,7 @@
     input.value = '';
     input.disabled = true;
     sendBtn.disabled = true;
+    statusEl.textContent = 'Assistant is replying';
 
     return fetch(ENDPOINT, {
       method: 'POST',
@@ -231,11 +252,13 @@
       .then(function (res) { return res.json(); })
       .then(function (data) {
         var reply = data.reply || data.error || 'Something went wrong - please try again.';
+        statusEl.textContent = '';
         renderMessage('assistant', reply);
         history.push({ role: 'assistant', content: reply });
         persist();
       })
       .catch(function () {
+        statusEl.textContent = '';
         renderMessage('assistant', "Something went wrong - please try again, or email contact@fieldnotesecurity.com.");
       })
       .finally(function () {
