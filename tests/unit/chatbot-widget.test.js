@@ -304,26 +304,28 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     expect(expanded()).toBe('false');
   });
 
-  it('#fnsChatBody becomes a polite log only after the restored history is rendered', () => {
+  // Gate 2 chunk 2 (B3): was "becomes a polite log only after the restored history
+  // is rendered". The body is no longer live at all, so the restore can no longer be
+  // announced through it; what still matters is that the history is restored into a
+  // named, browsable group and that the status region says nothing on page load.
+  it('#fnsChatBody is a named group, not a live region, and restored history leaves the status empty', async () => {
     sessionStorage.setItem('fns_chat_history', JSON.stringify([
       { role: 'user', content: 'earlier question' },
       { role: 'assistant', content: 'earlier answer' },
     ]));
-    // Record the moment each restored message is appended: the body must not be a live region yet.
-    const seen = [];
-    const original = Element.prototype.appendChild;
-    const spy = vi.spyOn(Element.prototype, 'appendChild').mockImplementation(function (child) {
-      if (this.id === 'fnsChatBody') seen.push(this.getAttribute('role'));
-      return original.call(this, child);
-    });
-    loadWidget();
-    spy.mockRestore();
-    expect(seen).toEqual([null, null]);
-    const body = document.getElementById('fnsChatBody');
-    expect(body.getAttribute('role')).toBe('log');
-    expect(body.getAttribute('aria-live')).toBe('polite');
-    expect(body.getAttribute('aria-label')).toBe('Conversation');
-    expect(body.querySelectorAll('.fns-msg')).toHaveLength(2);
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      loadWidget();
+      const body = document.getElementById('fnsChatBody');
+      expect(body.getAttribute('role')).toBe('group');
+      expect(body.hasAttribute('aria-live')).toBe(false);
+      expect(body.getAttribute('aria-label')).toBe('Conversation');
+      expect(body.querySelectorAll('.fns-msg')).toHaveLength(2);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(document.getElementById('fnsChatStatus').textContent).toBe('');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('a mocked reply appends a message with the "Assistant: " label; the user message has "You said: "', async () => {
@@ -379,7 +381,10 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     expect(document.querySelector('#fnsChatBody b')).toBeNull();
   });
 
-  it('the status element says "Assistant is replying" while waiting and is cleared after the reply', async () => {
+  // Gate 2 chunk 2 (B3): was "... and is cleared after the reply". The status region
+  // now carries the reply itself, so the old end state ('') would only be a passing
+  // moment; this checks the same waiting message plus the real end state.
+  it('the status element says "Assistant is replying" while waiting, then "Assistant: <reply>"', async () => {
     let resolve;
     global.fetch = vi.fn(() => new Promise((r) => { resolve = r; }));
     loadWidget();
@@ -391,22 +396,121 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     document.querySelector('#fnsChatSend').click();
     expect(status.textContent).toBe('Assistant is replying');
     resolve({ json: () => Promise.resolve({ reply: 'done' }) });
-    await vi.waitFor(() => expect(status.textContent).toBe(''));
+    await vi.waitFor(() => expect(status.textContent).toBe('Assistant: done'));
   });
 
-  it('the status element is cleared when the request fails too', async () => {
+  // Gate 2 chunk 2 (B3): was "the status element is cleared when the request fails
+  // too". It still checks that "Assistant is replying" does not linger after a
+  // failure, and now that the failure text itself is announced.
+  it('after a network failure the status says "Assistant: " + the failure text shown in the chat', async () => {
     global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
     loadWidget();
     document.querySelector('#fnsChatInput').value = 'Hi';
     document.querySelector('#fnsChatSend').click();
-    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
-    expect(document.getElementById('fnsChatStatus').textContent).toBe('');
+    await vi.waitFor(() => expect(document.getElementById('fnsChatStatus').textContent)
+      .toBe('Assistant: Something went wrong - please try again, or email contact@fieldnotesecurity.com.'));
   });
 
   it('the injected style gives .fns-chat-input a var(--field-border) border', () => {
     loadWidget();
     const css = document.head.querySelector('style').textContent;
     expect(css).toMatch(/\.fns-chat-input\{[^}]*border:1px solid var\(--field-border\)/);
+  });
+});
+
+// Gate 2 chunk 2: visible message label (B1), reduced motion for the launcher
+// (B2), replies and errors announced through #fnsChatStatus (B3). fetch is
+// always a mock; nothing reaches a live endpoint.
+describe('chatbot-widget.js: label, reduced motion and status announcements (Gate 2 chunk 2)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<main></main><footer></footer>';
+    document.head.innerHTML = '';
+    delete window.__fnsGuardAgainstReentry;
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
+  });
+
+  const status = () => document.getElementById('fnsChatStatus');
+  const css = () => document.head.querySelector('style').textContent;
+
+  it('B1: a visible label "Your message" names the textarea, which has no aria-label', () => {
+    loadWidget();
+    const input = document.getElementById('fnsChatInput');
+    const label = document.querySelector('.fns-chat-panel label.fns-chat-label');
+    expect(label).not.toBeNull();
+    expect(label.htmlFor).toBe('fnsChatInput');
+    expect(label.textContent).toBe('Your message');
+    expect(input.hasAttribute('aria-label')).toBe(false);
+    expect(input.getAttribute('placeholder')).toBe('Ask about services, pricing...');
+    // The name a screen reader uses comes from the associated <label>.
+    expect(Array.from(input.labels).map((l) => l.textContent)).toEqual(['Your message']);
+    // Directly above the form row, after the status region.
+    expect(label.nextElementSibling.id).toBe('fnsChatForm');
+    expect(label.previousElementSibling.id).toBe('fnsChatStatus');
+  });
+
+  it('B1: the label is not focusable, so the panel tab order is still close, textarea, Send', () => {
+    loadWidget();
+    const focusables = Array.from(document.querySelectorAll('.fns-chat-panel a[href], .fns-chat-panel button, .fns-chat-panel textarea, .fns-chat-panel input, .fns-chat-panel [tabindex]'));
+    expect(focusables.map((el) => el.id || el.className)).toEqual(['fns-chat-close', 'fnsChatInput', 'fnsChatSend']);
+  });
+
+  it('B1: the label rule is small secondary text with the form padding and never shrinks', () => {
+    loadWidget();
+    const rule = css().match(/\.fns-chat-label\{([^}]*)\}/)[1];
+    for (const decl of ['font-size:0.72rem', 'color:var(--text-secondary)', 'padding:0 16px']) expect(rule).toContain(decl);
+    expect(css()).toMatch(/\.fns-chat-label[^{]*\{flex-shrink:0;\}/);
+  });
+
+  it('B2: the injected style turns off the launcher motion under prefers-reduced-motion', () => {
+    loadWidget();
+    expect(css()).toContain('@media (prefers-reduced-motion: reduce){.fns-chat-btn{transition:none}.fns-chat-btn:hover{transform:none}}');
+  });
+
+  it('B3: after a mocked 429 the status says "Assistant: " + the error text shown in the chat', async () => {
+    const error = 'Rate limit reached. Please try again later, or email contact@fieldnotesecurity.com directly.';
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ error }) });
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'Hi';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(status().textContent).toBe('Assistant: ' + error));
+  });
+
+  it('B3: a reply-less response announces the fallback text', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({}) });
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'Hi';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(status().textContent).toBe('Assistant: Something went wrong - please try again.'));
+  });
+
+  it('B3: the status is cleared first and set 50 ms later, so the same reply twice is announced twice, and the visitor\'s own message never is', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      loadWidget();
+      const seen = [];
+      new MutationObserver(() => seen.push(status().textContent)).observe(status(), { childList: true, characterData: true, subtree: true });
+      const send = async (text) => {
+        document.querySelector('#fnsChatInput').value = text;
+        document.querySelector('#fnsChatSend').click();
+        await vi.advanceTimersByTimeAsync(0); // reply settles, status cleared, announcement pending
+        expect(status().textContent).toBe('');
+        await vi.advanceTimersByTimeAsync(49);
+        expect(status().textContent).toBe('');
+        await vi.advanceTimersByTimeAsync(1);
+        expect(status().textContent).toBe('Assistant: ok');
+      };
+      await send('first question');
+      await send('second question');
+      expect(seen).toEqual(['Assistant is replying', '', 'Assistant: ok', 'Assistant is replying', '', 'Assistant: ok']);
+      expect(seen.some((t) => t.includes('question') || t.includes('You said'))).toBe(false);
+      // The visitor's message is still rendered in the conversation.
+      expect(document.querySelectorAll('.fns-msg-user')).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -521,9 +625,9 @@ describe('chatbot-widget.js: short-screen sheet (a11y chunk 6a)', () => {
     return document.head.querySelector('style').textContent;
   };
 
-  it('head, form and disclaimer never shrink and the body may shrink to 0', () => {
+  it('head, label, form and disclaimer never shrink and the body may shrink to 0', () => {
     const css = styleText();
-    expect(css).toContain('.fns-chat-head,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}');
+    expect(css).toContain('.fns-chat-head,.fns-chat-label,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}');
     expect(css).toContain('.fns-chat-body{min-height:0;}');
   });
 

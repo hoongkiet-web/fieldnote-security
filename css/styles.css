@@ -1688,4 +1688,7 @@ footer {
     transform: none;
   }
   html { scroll-behavior: auto; }
+  /* Hover and press motion (B6); colour-only transitions stay. */
+  .btn, .cert-badge-link, .nav-dropdown-toggle::after { transition: none; }
+  .btn:active, .cert-badge-link:hover { transform: none; }
 }

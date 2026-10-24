@@ -29,6 +29,7 @@
     'background:var(--accent);color:var(--on-accent);border:none;cursor:pointer;z-index:9998;display:flex;align-items:center;',
     'justify-content:center;box-shadow:0 4px 16px var(--shadow-strong);transition:transform .15s var(--ease-out);}',
     '.fns-chat-btn:hover{transform:scale(1.06);}',
+    '@media (prefers-reduced-motion: reduce){.fns-chat-btn{transition:none}.fns-chat-btn:hover{transform:none}}',
     '.fns-chat-btn svg{width:24px;height:24px;}',
     '.fns-chat-panel{position:fixed;bottom:88px;right:20px;width:min(360px,calc(100vw - 40px));',
     'max-height:min(520px,calc(100vh - 140px));background:var(--bg-elevated);border:1px solid var(--border);',
@@ -45,6 +46,7 @@
     '.fns-msg-user{align-self:flex-end;background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--text-primary);}',
     '.fns-msg-bot{align-self:flex-start;background:var(--bg);border:1px solid var(--border-subtle);color:var(--text-primary);}',
     '.fns-msg-bot a{text-decoration:underline;}',
+    '.fns-chat-label{display:block;font-size:0.72rem;color:var(--text-secondary);padding:0 16px;}',
     '.fns-chat-form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border-subtle);}',
     '.fns-chat-input{flex:1;background:var(--bg);border:1px solid var(--field-border);border-radius:8px;color:var(--text-primary);',
     'padding:8px 10px;font-size:0.85rem;font-family:var(--font-body);resize:none;}',
@@ -53,8 +55,8 @@
     'font-weight:600;font-size:0.85rem;cursor:pointer;}',
     '.fns-chat-send:disabled,.fns-chat-send[aria-disabled="true"]{opacity:0.5;cursor:not-allowed;}',
     '.fns-chat-disclaimer{font-size:0.66rem;color:var(--text-secondary);padding:0 16px 10px;}',
-    // a11y F3 (WCAG 1.4.10): only the history shrinks, so the close button, form and disclaimer are never clipped.
-    '.fns-chat-head,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}',
+    // a11y F3 (WCAG 1.4.10): only the history shrinks, so the close button, label, form and disclaimer are never clipped.
+    '.fns-chat-head,.fns-chat-label,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}',
     '.fns-chat-body{min-height:0;}',
     // Short viewports (e.g. 400% zoom): full-height sheet; history keeps 96px and the panel scrolls instead of clipping.
     // The panel stacks above the launcher (z-index 9999 vs 9998), so bottom:8px leaves Send uncovered.
@@ -87,8 +89,9 @@
     '</div>' +
     '<div class="fns-chat-body" id="fnsChatBody"></div>' +
     '<div class="sr-only" role="status" id="fnsChatStatus"></div>' +
+    '<label for="fnsChatInput" class="fns-chat-label">Your message</label>' +
     '<form class="fns-chat-form" id="fnsChatForm">' +
-      '<textarea class="fns-chat-input" id="fnsChatInput" rows="1" maxlength="800" placeholder="Ask about services, pricing..." aria-label="Message"></textarea>' +
+      '<textarea class="fns-chat-input" id="fnsChatInput" rows="1" maxlength="800" placeholder="Ask about services, pricing..."></textarea>' +
       '<button type="submit" class="fns-chat-send" id="fnsChatSend">Send</button>' +
     '</form>' +
     '<p class="fns-chat-disclaimer">AI assistant, not a human - answers are general guidance, not legal advice and not a substitute for a full assessment.</p>';
@@ -211,6 +214,21 @@
     body.scrollTop = body.scrollHeight;
   }
 
+  // Replies and errors are announced here, not by a live conversation body (which also
+  // read out the visitor's own message). Cleared first and set on a later tick, so the
+  // same text twice in a row is announced again.
+  var announceTimer = null;
+  function announce(text) {
+    clearTimeout(announceTimer);
+    statusEl.textContent = '';
+    announceTimer = setTimeout(function () { statusEl.textContent = text; }, 50);
+  }
+
+  function showAssistantMessage(text) {
+    renderMessage('assistant', text);
+    announce('Assistant: ' + text);
+  }
+
   function persist() {
     try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-6))); } catch (e) {}
   }
@@ -219,9 +237,9 @@
   if (history.length === 0) {
     renderMessage('assistant', "Hi - I can answer questions about Fieldnote Security's services, pricing, or general cybersecurity topics. What would you like to know?");
   }
-  // Made a live region only now, so the restored history and greeting are not re-announced on page load.
-  body.setAttribute('role', 'log');
-  body.setAttribute('aria-live', 'polite');
+  // A named group, not a live region (role=log is implicitly live): history stays browsable,
+  // nothing is read out on page load, and only #fnsChatStatus announces.
+  body.setAttribute('role', 'group');
   body.setAttribute('aria-label', 'Conversation');
 
   btn.addEventListener('click', function () {
@@ -259,6 +277,8 @@
     input.readOnly = true;
     sendBtn.setAttribute('aria-disabled', 'true');
     form.setAttribute('aria-busy', 'true');
+    // Set at once, as before; cancels a reply announcement still waiting from the last message.
+    clearTimeout(announceTimer);
     statusEl.textContent = 'Assistant is replying';
 
     return fetch(ENDPOINT, {
@@ -273,19 +293,17 @@
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        statusEl.textContent = '';
         // Error and fallback text is shown but never stored, so it is not re-shown or sent as history.
         if (data.reply) {
-          renderMessage('assistant', data.reply);
+          showAssistantMessage(data.reply);
           history.push({ role: 'assistant', content: data.reply });
           persist();
         } else {
-          renderMessage('assistant', data.error || 'Something went wrong - please try again.');
+          showAssistantMessage(data.error || 'Something went wrong - please try again.');
         }
       })
       .catch(function () {
-        statusEl.textContent = '';
-        renderMessage('assistant', "Something went wrong - please try again, or email contact@fieldnotesecurity.com.");
+        showAssistantMessage("Something went wrong - please try again, or email contact@fieldnotesecurity.com.");
       })
       .finally(function () {
         input.readOnly = false;
