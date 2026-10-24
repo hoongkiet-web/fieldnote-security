@@ -203,7 +203,8 @@
     // Who said it, for screen readers; the message itself stays a plain text node (never innerHTML).
     var speaker = document.createElement('span');
     speaker.className = 'sr-only';
-    speaker.textContent = role === 'user' ? 'You said: ' : 'Assistant: ';
+    // No-break space: a plain trailing space collapses at the end of the absolutely positioned .sr-only span.
+    speaker.textContent = role === 'user' ? 'You said:\u00a0' : 'Assistant:\u00a0';
     el.appendChild(speaker);
     el.appendChild(document.createTextNode(text));
     body.appendChild(el);
@@ -263,17 +264,24 @@
     return fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // Only the last 6 earlier turns go in the request (the worker caps it too);
-      // the panel still shows the whole conversation.
-      body: JSON.stringify({ message: text, history: history.slice(0, -1).slice(-6) }),
+      // Only the visitor's own last 6 earlier messages go in the request (the worker
+      // keeps user entries only and caps it too); the panel still shows the whole conversation.
+      body: JSON.stringify({
+        message: text,
+        history: history.slice(0, -1).filter(function (m) { return m.role === 'user'; }).slice(-6),
+      }),
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        var reply = data.reply || data.error || 'Something went wrong - please try again.';
         statusEl.textContent = '';
-        renderMessage('assistant', reply);
-        history.push({ role: 'assistant', content: reply });
-        persist();
+        // Error and fallback text is shown but never stored, so it is not re-shown or sent as history.
+        if (data.reply) {
+          renderMessage('assistant', data.reply);
+          history.push({ role: 'assistant', content: data.reply });
+          persist();
+        } else {
+          renderMessage('assistant', data.error || 'Something went wrong - please try again.');
+        }
       })
       .catch(function () {
         statusEl.textContent = '';

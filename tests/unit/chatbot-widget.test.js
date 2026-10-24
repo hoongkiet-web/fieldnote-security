@@ -123,9 +123,12 @@ describe('chatbot-widget.js: request history is capped at 6 entries', () => {
     try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
   });
 
-  it('sends only the last 6 of 10 earlier entries, but keeps all 10 on screen', async () => {
+  // Gate 2 chunk 1 (B6): the worker keeps user entries only, so the widget sends
+  // only the visitor's own earlier messages - the newest 6, in order.
+  it('with 10 earlier mixed entries, sends only the newest 6 user entries in order, never the current message, and keeps all 10 on screen', async () => {
+    // 8 user entries (m0-m2, m4-m6, m8-m9) and 2 assistant entries (m3, m7).
     const earlier = [];
-    for (let i = 0; i < 10; i++) earlier.push({ role: i % 2 ? 'assistant' : 'user', content: `m${i}` });
+    for (let i = 0; i < 10; i++) earlier.push({ role: i === 3 || i === 7 ? 'assistant' : 'user', content: `m${i}` });
     sessionStorage.setItem('fns_chat_history', JSON.stringify(earlier));
     const fetchMock = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
     global.fetch = fetchMock;
@@ -138,8 +141,84 @@ describe('chatbot-widget.js: request history is capped at 6 entries', () => {
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(sent.message).toBe('newest');
-    expect(sent.history).toEqual(earlier.slice(-6));
+    expect(sent.history).toEqual(['m2', 'm4', 'm5', 'm6', 'm8', 'm9'].map((content) => ({ role: 'user', content })));
+    expect(sent.history.length).toBeLessThanOrEqual(6);
+    expect(sent.history.some((m) => m.content === 'newest')).toBe(false);
     expect(document.body.textContent).toContain('m0');
+  });
+
+  it('the request body never contains an assistant entry, even after a stored reply', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'first answer' }) });
+    global.fetch = fetchMock;
+    loadWidget();
+
+    document.querySelector('#fnsChatInput').value = 'first question';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    document.querySelector('#fnsChatInput').value = 'second question';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    const second = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(second.history).toEqual([{ role: 'user', content: 'first question' }]);
+    for (const call of fetchMock.mock.calls) {
+      expect(JSON.parse(call[1].body).history.every((m) => m.role === 'user')).toBe(true);
+    }
+  });
+});
+
+// Gate 2 chunk 1 (B5): error and fallback text is shown but never stored, so it
+// is not re-shown after a page change and never sent as history.
+describe('chatbot-widget.js: error text is shown but not stored', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    document.head.innerHTML = '';
+    delete window.__fnsGuardAgainstReentry;
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
+  });
+
+  const stored = () => JSON.parse(sessionStorage.getItem('fns_chat_history') || '[]');
+
+  async function sendThenSendAgain(firstResponse) {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ json: () => Promise.resolve(firstResponse) })
+      .mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
+    global.fetch = fetchMock;
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'first';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    const afterFirst = stored();
+    document.querySelector('#fnsChatInput').value = 'second';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    return { afterFirst, next: JSON.parse(fetchMock.mock.calls[1][1].body) };
+  }
+
+  it('a 429 error is rendered but is in neither sessionStorage nor the next request history', async () => {
+    const error = 'Rate limit reached. Please try again later, or email contact@fieldnotesecurity.com directly.';
+    const { afterFirst, next } = await sendThenSendAgain({ error });
+    expect(document.querySelectorAll('.fns-msg-bot')[1].lastChild.textContent).toBe(error);
+    expect(afterFirst).toEqual([{ role: 'user', content: 'first' }]);
+    expect(JSON.stringify(next.history)).not.toContain(error);
+    expect(next.history).toEqual([{ role: 'user', content: 'first' }]);
+  });
+
+  it('a reply-less 200 shows the fallback text but does not store it', async () => {
+    const { afterFirst, next } = await sendThenSendAgain({});
+    expect(document.querySelectorAll('.fns-msg-bot')[1].lastChild.textContent).toBe('Something went wrong - please try again.');
+    expect(afterFirst).toEqual([{ role: 'user', content: 'first' }]);
+    expect(JSON.stringify(next.history)).not.toContain('Something went wrong');
+  });
+
+  it('a normal reply is still stored and persisted', async () => {
+    const { afterFirst } = await sendThenSendAgain({ reply: 'real answer' });
+    expect(afterFirst).toEqual([
+      { role: 'user', content: 'first' },
+      { role: 'assistant', content: 'real answer' },
+    ]);
   });
 });
 
@@ -253,12 +332,26 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     document.querySelector('#fnsChatSend').click();
     await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
     const bot = document.querySelectorAll('.fns-msg-bot')[1];
-    expect(bot.querySelector('.sr-only').textContent).toBe('Assistant: ');
-    expect(bot.textContent).toBe('Assistant: ok');
+    expect(bot.querySelector('.sr-only').textContent).toBe('Assistant:\u00a0');
+    expect(bot.textContent).toBe('Assistant:\u00a0ok');
     const user = document.querySelector('.fns-msg-user');
-    expect(user.querySelector('.sr-only').textContent).toBe('You said: ');
+    expect(user.querySelector('.sr-only').textContent).toBe('You said:\u00a0');
     expect(user.lastChild.nodeType).toBe(Node.TEXT_NODE);
     expect(user.lastChild.textContent).toBe('Hello there');
+  });
+
+  // Gate 2 chunk 1 (B4): a plain trailing space collapses at the end of the
+  // absolutely positioned .sr-only span ("You said:why"), a no-break space does not.
+  it('both speaker labels end with a no-break space (U+00A0), not a plain space', async () => {
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'why';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    const labels = [document.querySelector('.fns-msg-user .sr-only'), document.querySelectorAll('.fns-msg-bot')[1].querySelector('.sr-only')];
+    for (const label of labels) {
+      expect(label.textContent.endsWith('\u00a0')).toBe(true);
+      expect(label.textContent).not.toMatch(/ $/);
+    }
   });
 
   it('message text is never parsed as HTML', async () => {
