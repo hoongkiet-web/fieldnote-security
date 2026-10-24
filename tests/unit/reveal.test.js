@@ -119,3 +119,83 @@ describe('main.js mobile menu Escape', () => {
     expect(document.activeElement).toBe(mainEl);
   });
 });
+
+// a11y chunk 6b (F13): "Services" is a plain link; #servicesToggle opens the menu at >= 1280px.
+describe('main.js Services link and menu button', () => {
+  function setup(desktop) {
+    window.matchMedia = vi.fn((query) => ({
+      matches: query === '(min-width: 1280px)' ? desktop : false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    document.body.innerHTML =
+      '<header><button id="menuBtn" aria-expanded="false">Menu</button>' +
+      '<nav class="nav-links"><div class="nav-dropdown">' +
+      '<a href="services.html" class="nav-dropdown-link" id="servicesLink">Services</a>' +
+      '<button type="button" class="nav-dropdown-toggle" id="servicesToggle" aria-expanded="false" aria-controls="servicesMenu" aria-label="Services menu"></button>' +
+      '<div class="nav-dropdown-menu" id="servicesMenu"><a href="gdpr-checker.html">GDPR Checker</a>' +
+      '<a href="email-security.html" aria-current="page">Email Security</a></div></div></nav></header>' +
+      '<main id="main" tabindex="-1"></main><footer></footer>';
+    loadMain();
+    return {
+      link: document.getElementById('servicesLink'),
+      btn: document.getElementById('servicesToggle'),
+      menu: document.getElementById('servicesMenu'),
+    };
+  }
+  // jsdom does not navigate, so dispatch a cancelable click and read defaultPrevented.
+  const clickPrevented = (el) => !el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+  it('desktop: the button toggles aria-expanded and the open class, and focuses the first item', () => {
+    const { btn, menu } = setup(true);
+    btn.click();
+    expect(btn.getAttribute('aria-expanded')).toBe('true');
+    expect(menu.classList.contains('open')).toBe(true);
+    expect(document.activeElement.textContent).toBe('GDPR Checker');
+    btn.click();
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+    expect(menu.classList.contains('open')).toBe(false);
+  });
+
+  it('desktop: Escape closes the menu and returns focus to the button', () => {
+    const { btn, menu } = setup(true);
+    btn.click();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(menu.classList.contains('open')).toBe(false);
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(btn);
+  });
+
+  it('desktop: a click on the Services link is not default-prevented and does not open the menu', () => {
+    const { link, menu } = setup(true);
+    expect(clickPrevented(link)).toBe(false);
+    expect(menu.classList.contains('open')).toBe(false);
+  });
+
+  it('desktop: a click outside closes the open menu', () => {
+    const { btn, menu } = setup(true);
+    btn.click();
+    document.getElementById('main').click();
+    expect(menu.classList.contains('open')).toBe(false);
+  });
+
+  it('mobile: the link is not prevented, the menu does not open, and openMenu() focuses the Services link', () => {
+    const { link, btn, menu } = setup(false);
+    expect(clickPrevented(link)).toBe(false);
+    btn.click();
+    expect(menu.classList.contains('open')).toBe(false);
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+    document.getElementById('menuBtn').click();
+    expect(document.activeElement).toBe(link);
+  });
+
+  it('the link, not the button, gets the active class when the current page is in the menu; no ARIA added to the link', () => {
+    const { link, btn } = setup(true);
+    expect(link.classList.contains('nav-dropdown-link-active')).toBe(true);
+    expect(btn.classList.contains('nav-dropdown-link-active')).toBe(false);
+    for (const attr of ['aria-haspopup', 'aria-controls', 'aria-expanded']) expect(link.hasAttribute(attr)).toBe(false);
+  });
+});

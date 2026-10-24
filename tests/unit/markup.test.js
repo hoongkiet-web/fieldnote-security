@@ -50,6 +50,26 @@ describe.each(PAGES)('%s', (page) => {
   it('every target="_blank" link says it opens in a new tab', () => {
     for (const a of doc.querySelectorAll('a[target="_blank"]')) expect(linkName(a)).toMatch(/\(opens in new tab\)$/);
   });
+
+  // a11y chunk 6b (F13): Services is a real link, the menu has its own button.
+  it('Services is a link to services.html with a separate menu button', () => {
+    const link = doc.querySelector('a#servicesLink');
+    expect(link.getAttribute('href')).toBe('services.html');
+    expect(link.textContent).toBe('Services');
+    const btn = doc.querySelector('button#servicesToggle');
+    expect(btn.getAttribute('type')).toBe('button');
+    expect(btn.getAttribute('aria-controls')).toBe('servicesMenu');
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
+    expect(btn.getAttribute('aria-label')).toBe('Services menu');
+    expect(link.nextElementSibling).toBe(btn);
+    expect(doc.getElementById('servicesMenu').querySelectorAll('a')).toHaveLength(5);
+    expect(doc.body.textContent).not.toContain('View all services');
+  });
+});
+
+it('aria-current="page" on Services only on services.html', () => {
+  const current = PAGES.filter((p) => parse(p).querySelector('a#servicesLink[aria-current="page"]'));
+  expect(current).toEqual(['services.html']);
 });
 
 it('counts: 12 aria-hidden arrows and 11 new-tab links across the site', () => {
@@ -94,6 +114,16 @@ describe('css/styles.css rules (chunk 5)', () => {
   });
   it('.process-strip .arrow uses --text-secondary', () => {
     expect(css).toContain('.process-strip .arrow { color: var(--text-secondary); }');
+  });
+  it('the Services menu button is hidden below 1280px and has a 24px target, chevron and focus ring at 1280px', () => {
+    expect(css).toMatch(/\n\.nav-dropdown-toggle \{\s*display: none;\s*\}/);
+    const desktop = css.slice(css.indexOf('@media (min-width: 1280px)'));
+    const rule = desktop.match(/\.nav-dropdown-toggle \{([^}]*)\}/)[1];
+    for (const decl of ['display: inline-flex', 'width: 24px', 'height: 24px']) expect(rule).toContain(decl);
+    expect(desktop).toContain('.nav-dropdown-toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent); }');
+    expect(desktop).toMatch(/\.nav-dropdown-toggle\[aria-expanded="true"\]::after \{/);
+    expect(css).not.toContain('nav-dropdown-view-all');
+    expect(css).toContain('.nav-links a.nav-dropdown-link.nav-dropdown-link-active {');
   });
   it('.skip-link sits above the sticky header (z-index 40) and is shown on :focus', () => {
     const rule = css.match(/\.skip-link \{([^}]*)\}/)[1];

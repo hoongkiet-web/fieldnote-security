@@ -81,12 +81,13 @@
     };
   }
 
-  // FS-91: Services dropdown, desktop-only (>=1280px). "Services" stays a
-  // real <a href="services.html"> (not a <button>) so openMenu()'s
-  // `navLinks.querySelector('a')` above keeps finding a real link first on
-  // mobile, exactly as before FS-91 - deliberately not converted, per the
-  // focus-risk this codebase already identified for that selector.
+  // FS-91: Services dropdown, desktop-only (>=1280px). a11y F13: "Services"
+  // (#servicesLink) is a plain link to services.html at every width, with no
+  // handler; the separate #servicesToggle button opens the menu. The button is
+  // display:none below 1280px, so openMenu()'s `navLinks.querySelector('a')`
+  // above still focuses the Services link first on mobile.
   var servicesToggle = document.getElementById('servicesToggle');
+  var servicesLink = document.getElementById('servicesLink');
   var servicesMenu = document.getElementById('servicesMenu');
 
   if (servicesToggle && servicesMenu) {
@@ -110,16 +111,10 @@
       if (returnFocusToToggle) servicesToggle.focus();
     }
 
-    // "Services" is both the toggle and a real link to services.html. On
-    // desktop this click toggles the dropdown instead of navigating - the
-    // only self-consistent reading of "click-toggle dropdown" plus
-    // Escape-returns-focus-to-toggle/click-outside-closes/focus-first-item,
-    // none of which would ever fire if a click just navigated away. Below
-    // 1280px the handler is a no-op, so the href navigates normally, same
-    // as every other nav link.
-    servicesToggle.addEventListener('click', function (e) {
+    // The button is hidden below 1280px, so the width check only guards a
+    // click arriving mid-resize.
+    servicesToggle.addEventListener('click', function () {
       if (!isDesktopDropdown()) return;
-      e.preventDefault();
       if (isDropdownOpen()) closeServicesDropdown(false);
       else openServicesDropdown();
     });
@@ -156,24 +151,11 @@
       });
     });
 
-    // ARIA presence itself is breakpoint-gated, not just the interactive
-    // behavior - without this, a mobile screen-reader user would hear
-    // "Services, has popup, collapsed" on a link that, below 1280px, has no
-    // popup at all and just navigates normally.
+    // ARIA lives in the markup on the button, which is display:none (out of
+    // the accessibility tree) below 1280px; leaving desktop width just closes
+    // the menu.
     function applyDropdownMode() {
-      if (isDesktopDropdown()) {
-        servicesToggle.setAttribute('aria-haspopup', 'true');
-        servicesToggle.setAttribute('aria-controls', 'servicesMenu');
-        servicesToggle.setAttribute('aria-expanded', isDropdownOpen() ? 'true' : 'false');
-      } else {
-        // closeServicesDropdown() itself sets aria-expanded="false" as a
-        // side effect, so it must run BEFORE the removeAttribute calls
-        // below - otherwise it would silently put aria-expanded right back.
-        closeServicesDropdown(false);
-        servicesToggle.removeAttribute('aria-haspopup');
-        servicesToggle.removeAttribute('aria-controls');
-        servicesToggle.removeAttribute('aria-expanded');
-      }
+      if (!isDesktopDropdown()) closeServicesDropdown(false);
     }
     applyDropdownMode();
     desktopMql.addEventListener('change', applyDropdownMode);
@@ -183,8 +165,8 @@
     // when the current page is one of the items inside the - possibly
     // closed - dropdown, so it doesn't visually disappear from the nav
     // just because it's collapsed by default.
-    if (servicesMenu.querySelector('a[aria-current="page"]')) {
-      servicesToggle.classList.add('nav-dropdown-toggle-active');
+    if (servicesLink && servicesMenu.querySelector('a[aria-current="page"]')) {
+      servicesLink.classList.add('nav-dropdown-link-active');
     }
   }
 
