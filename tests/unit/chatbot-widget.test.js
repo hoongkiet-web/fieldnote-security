@@ -34,9 +34,12 @@ function loadWidget() {
   (0, eval)(WIDGET_SRC);
 }
 
+// The visible message text: since a11y chunk 2 each message starts with a
+// screen-reader-only speaker label (asserted separately below), so read the
+// message's own text node rather than the whole element's textContent.
 function lastBotMessageText() {
   const messages = document.querySelectorAll('.fns-msg-bot');
-  return messages[messages.length - 1].textContent;
+  return messages[messages.length - 1].lastChild.textContent;
 }
 
 async function sendMessageAndGetMockedResponse(mockResponse) {
@@ -173,5 +176,262 @@ describe('chatbot-widget.js: endpoint by hostname (FS-170 chunk 3)', () => {
     expect(String(url)).not.toContain('workers.dev');
     expect(init.method).toBe('POST');
     expect(init.credentials === undefined || init.credentials === 'same-origin' || init.credentials === 'include').toBe(true);
+  });
+});
+
+// a11y chunk 2: dialog semantics (F7), live region (F2), speaker labels (F10),
+// input border token (F6). fetch is always a mock; nothing reaches a live endpoint.
+describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<main></main><footer></footer>';
+    document.head.innerHTML = '';
+    delete window.__fnsGuardAgainstReentry;
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
+  });
+
+  const launcher = () => document.querySelector('.fns-chat-btn');
+  const panel = () => document.querySelector('.fns-chat-panel');
+
+  it('the panel is a labelled modal dialog and the launcher controls it', () => {
+    loadWidget();
+    const p = panel();
+    expect(p.id).toBe('fnsChatPanel');
+    expect(p.getAttribute('role')).toBe('dialog');
+    expect(p.getAttribute('aria-modal')).toBe('true');
+    const title = document.getElementById(p.getAttribute('aria-labelledby'));
+    expect(title.tagName).toBe('H2');
+    expect(title.textContent).toBe('Fieldnote Security assistant');
+    expect(launcher().getAttribute('aria-controls')).toBe('fnsChatPanel');
+    expect(launcher().getAttribute('aria-label')).toBe('Chat assistant');
+    expect(launcher().getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('aria-expanded follows open and close by launcher click, Escape and the close button', () => {
+    loadWidget();
+    const expanded = () => launcher().getAttribute('aria-expanded');
+    launcher().click();
+    expect(expanded()).toBe('true');
+    launcher().click();
+    expect(expanded()).toBe('false');
+    launcher().click();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(expanded()).toBe('false');
+    launcher().click();
+    expect(expanded()).toBe('true');
+    document.querySelector('.fns-chat-close').click();
+    expect(expanded()).toBe('false');
+  });
+
+  it('#fnsChatBody becomes a polite log only after the restored history is rendered', () => {
+    sessionStorage.setItem('fns_chat_history', JSON.stringify([
+      { role: 'user', content: 'earlier question' },
+      { role: 'assistant', content: 'earlier answer' },
+    ]));
+    // Record the moment each restored message is appended: the body must not be a live region yet.
+    const seen = [];
+    const original = Element.prototype.appendChild;
+    const spy = vi.spyOn(Element.prototype, 'appendChild').mockImplementation(function (child) {
+      if (this.id === 'fnsChatBody') seen.push(this.getAttribute('role'));
+      return original.call(this, child);
+    });
+    loadWidget();
+    spy.mockRestore();
+    expect(seen).toEqual([null, null]);
+    const body = document.getElementById('fnsChatBody');
+    expect(body.getAttribute('role')).toBe('log');
+    expect(body.getAttribute('aria-live')).toBe('polite');
+    expect(body.getAttribute('aria-label')).toBe('Conversation');
+    expect(body.querySelectorAll('.fns-msg')).toHaveLength(2);
+  });
+
+  it('a mocked reply appends a message with the "Assistant: " label; the user message has "You said: "', async () => {
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'Hello there';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    const bot = document.querySelectorAll('.fns-msg-bot')[1];
+    expect(bot.querySelector('.sr-only').textContent).toBe('Assistant: ');
+    expect(bot.textContent).toBe('Assistant: ok');
+    const user = document.querySelector('.fns-msg-user');
+    expect(user.querySelector('.sr-only').textContent).toBe('You said: ');
+    expect(user.lastChild.nodeType).toBe(Node.TEXT_NODE);
+    expect(user.lastChild.textContent).toBe('Hello there');
+  });
+
+  it('message text is never parsed as HTML', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: '<img src=x onerror=alert(1)>' }) });
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = '<b>bold</b>';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    expect(document.querySelector('#fnsChatBody img')).toBeNull();
+    expect(document.querySelector('#fnsChatBody b')).toBeNull();
+  });
+
+  it('the status element says "Assistant is replying" while waiting and is cleared after the reply', async () => {
+    let resolve;
+    global.fetch = vi.fn(() => new Promise((r) => { resolve = r; }));
+    loadWidget();
+    const status = document.getElementById('fnsChatStatus');
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.classList.contains('sr-only')).toBe(true);
+    expect(panel().contains(status)).toBe(true);
+    document.querySelector('#fnsChatInput').value = 'Hi';
+    document.querySelector('#fnsChatSend').click();
+    expect(status.textContent).toBe('Assistant is replying');
+    resolve({ json: () => Promise.resolve({ reply: 'done' }) });
+    await vi.waitFor(() => expect(status.textContent).toBe(''));
+  });
+
+  it('the status element is cleared when the request fails too', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'Hi';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    expect(document.getElementById('fnsChatStatus').textContent).toBe('');
+  });
+
+  it('the injected style gives .fns-chat-input a var(--field-border) border', () => {
+    loadWidget();
+    const css = document.head.querySelector('style').textContent;
+    expect(css).toMatch(/\.fns-chat-input\{[^}]*border:1px solid var\(--field-border\)/);
+  });
+});
+
+// a11y chunk 3: focus stays in the chat while a reply is pending (F4), and the
+// close button is a 44 px target (B3). fetch is always a mock.
+describe('chatbot-widget.js: focus during send and close target (a11y chunk 3)', () => {
+  let resolveFetch;
+  beforeEach(() => {
+    document.body.innerHTML = '<main></main><footer></footer>';
+    document.head.innerHTML = '';
+    delete window.__fnsGuardAgainstReentry;
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
+    global.fetch = vi.fn(() => new Promise((r) => { resolveFetch = r; }));
+  });
+
+  const els = () => ({
+    input: document.querySelector('#fnsChatInput'),
+    send: document.querySelector('#fnsChatSend'),
+    form: document.querySelector('#fnsChatForm'),
+  });
+  // Open the panel (focus goes to the textarea), type, press Enter: the keyboard path.
+  function sendWithEnter(text) {
+    document.querySelector('.fns-chat-btn').click();
+    const { input } = els();
+    input.value = text;
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+  }
+
+  it('while the reply is pending, focus stays on the textarea, it is read-only, send is aria-disabled and the form is busy', () => {
+    loadWidget();
+    sendWithEnter('Hello');
+    const { input, send, form } = els();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(input);
+    expect(input.readOnly).toBe(true);
+    expect(input.disabled).toBe(false);
+    expect(send.getAttribute('aria-disabled')).toBe('true');
+    expect(send.disabled).toBe(false);
+    expect(form.getAttribute('aria-busy')).toBe('true');
+  });
+
+  it('after the reply, the textarea is editable again, aria-disabled and aria-busy are gone, focus is on the textarea', async () => {
+    loadWidget();
+    sendWithEnter('Hello');
+    resolveFetch({ json: () => Promise.resolve({ reply: 'done' }) });
+    const { input, send, form } = els();
+    await vi.waitFor(() => expect(input.readOnly).toBe(false));
+    expect(send.hasAttribute('aria-disabled')).toBe(false);
+    expect(form.hasAttribute('aria-busy')).toBe(false);
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('the same reset happens after a failed request', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+    loadWidget();
+    sendWithEnter('Hello');
+    const { input, send, form } = els();
+    await vi.waitFor(() => expect(input.readOnly).toBe(false));
+    expect(send.hasAttribute('aria-disabled')).toBe(false);
+    expect(form.hasAttribute('aria-busy')).toBe(false);
+  });
+
+  it('a second submit while the first is pending does not call fetch again (Send click and Enter)', () => {
+    loadWidget();
+    sendWithEnter('First');
+    const { input, send } = els();
+    input.value = 'Second';
+    send.click();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  // The re-entry guard drops a second submit without calling preventDefault, and
+  // since chunk 3 Send and the textarea stay usable while a reply is pending, so
+  // the widget must cancel the native submission itself: otherwise the browser
+  // submits the chat form (a GET to the current page) and the page reloads.
+  it('every submit is default-prevented, including the ones dropped while a reply is pending', () => {
+    const seen = [];
+    const record = (e) => seen.push(e.defaultPrevented);
+    window.addEventListener('submit', record);
+    try {
+      loadWidget();
+      sendWithEnter('First');
+      const { input, send } = els();
+      input.value = 'Second';
+      send.click();
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    } finally {
+      window.removeEventListener('submit', record);
+    }
+    expect(seen).toEqual([true, true, true]);
+  });
+
+  it('the close button is a 44 x 44 px flex-centred target, and the send style also matches aria-disabled', () => {
+    loadWidget();
+    const css = document.head.querySelector('style').textContent;
+    const close = css.match(/\.fns-chat-close\{([^}]*)\}/)[1];
+    for (const decl of ['width:44px', 'height:44px', 'display:flex', 'align-items:center', 'justify-content:center', 'top:2px', 'right:2px']) {
+      expect(close).toContain(decl);
+    }
+    expect(css).toContain('.fns-chat-send:disabled,.fns-chat-send[aria-disabled="true"]{opacity:0.5;cursor:not-allowed;}');
+  });
+});
+
+// a11y chunk 6a (F3, WCAG 1.4.10): full-height sheet under 500px tall. jsdom has
+// no layout, so these check the injected CSS text, not rendered sizes.
+describe('chatbot-widget.js: short-screen sheet (a11y chunk 6a)', () => {
+  const styleText = () => {
+    loadWidget();
+    return document.head.querySelector('style').textContent;
+  };
+
+  it('head, form and disclaimer never shrink and the body may shrink to 0', () => {
+    const css = styleText();
+    expect(css).toContain('.fns-chat-head,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}');
+    expect(css).toContain('.fns-chat-body{min-height:0;}');
+  });
+
+  it('under 500px tall the panel is a full-height scrolling sheet and history keeps 96px', () => {
+    const block = styleText().match(/@media \(max-height:500px\)\{(.*)\}$/)[1];
+    const panel = block.match(/\.fns-chat-panel\{([^}]*)\}/)[1];
+    for (const decl of ['top:8px', 'bottom:8px', 'right:8px', 'max-height:none', 'width:min(360px,calc(100vw - 16px))', 'overflow-y:auto']) {
+      expect(panel).toContain(decl);
+    }
+    expect(block).toContain('.fns-chat-body{flex:1 0 96px;}');
+  });
+
+  it('the normal panel rule is unchanged (bottom 88px, same max-height)', () => {
+    const css = styleText();
+    expect(css).toContain('.fns-chat-panel{position:fixed;bottom:88px;right:20px;width:min(360px,calc(100vw - 40px));'
+      + 'max-height:min(520px,calc(100vh - 140px));');
+    expect(css.indexOf('.fns-chat-panel{position:fixed;bottom:88px')).toBeLessThan(css.indexOf('@media (max-height:500px)'));
   });
 });

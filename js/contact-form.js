@@ -61,6 +61,9 @@
     var servicesChecked = form.querySelectorAll('input[name="service"]:checked');
     if (servicesChecked.length === 0) {
       status.textContent = 'Please select at least one service.';
+      // The services fieldset is described by #formStatus, so focusing its first box reads the error.
+      var firstService = form.querySelector('input[name="service"]');
+      if (firstService) firstService.focus();
       return;
     }
 
@@ -75,11 +78,15 @@
       headers: { 'Accept': 'application/json' }
     }).then(function (response) {
       if (response.ok) {
+        // The form (and the focused button) is replaced, so move focus to the message
+        // itself; role=status also announces it where focus is not followed.
         card.innerHTML =
-          '<div class="form-success">' +
+          '<div class="form-success" role="status" tabindex="-1">' +
           '<h3>Thanks - your request is in.</h3>' +
           '<p>I\'ll take a look and get back to you at the email you provided.</p>' +
           '</div>';
+        var success = card.querySelector('.form-success');
+        if (success) success.focus();
       } else {
         // Distinguishes "reached Formspree, got rejected" (the FS-58/59
         // dead-endpoint failure mode) from a network-level failure below.

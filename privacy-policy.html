@@ -25,15 +25,16 @@
 </script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to main content</a>
 
 <header class="site-header">
   <div class="container nav-row">
     <a href="index.html" class="wordmark">Field<span>note</span> Security</a>
     <nav class="nav-links" id="mobileNav">
       <div class="nav-dropdown">
-        <a href="services.html" class="nav-dropdown-toggle" id="servicesToggle">Services</a>
+        <a href="services.html" class="nav-dropdown-link" id="servicesLink">Services</a>
+        <button type="button" class="nav-dropdown-toggle" id="servicesToggle" aria-expanded="false" aria-controls="servicesMenu" aria-label="Services menu"></button>
         <div class="nav-dropdown-menu" id="servicesMenu">
-          <a href="services.html" class="nav-dropdown-view-all">View all services</a>
           <a href="gdpr-checker.html">GDPR Checker</a>
           <a href="email-security.html">Email Security</a>
           <a href="accessibility-checker.html">Accessibility</a>
@@ -58,7 +59,7 @@
   </div>
 </header>
 
-<main>
+<main id="main" tabindex="-1">
 
   <section class="page-hero">
     <div class="container">
@@ -102,9 +103,9 @@
         <p>Data is deleted, not just archived, at the end of each period above. You can request earlier deletion at any time by contacting <a href="mailto:contact@fieldnotesecurity.com">contact@fieldnotesecurity.com</a>, subject to the exceptions above where retention supports a legal or contractual purpose.</p>
 
         <h2>Third parties</h2>
-        <p>This site is hosted on GitHub Pages and delivered through Cloudflare, which also provides its security protections (such as rate limiting and bot protection). Like any web host, they process your IP address and basic request details when you visit, to deliver the site and protect it from abuse, and keep this in short-lived operational logs under their own policies: the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement</a> and <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare's Privacy Policy</a>. Fieldnote Security does not use this data to identify or track visitors.</p>
-        <p>The contact form on this site is processed by <a href="https://formspree.io" target="_blank" rel="noopener noreferrer">Formspree</a>, a third-party form-handling service. Submitting the form sends your details to Formspree's infrastructure before they reach the company. Formspree's own handling of that data is governed by <a href="https://formspree.io/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Formspree's Privacy Policy</a>.</p>
-        <p>If you use the AI chat assistant, your message is sent to <a href="https://www.cloudflare.com/trust-hub/" target="_blank" rel="noopener noreferrer">Cloudflare Workers AI</a> to generate a reply. Cloudflare's own handling of that data is governed by <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare's Privacy Policy</a>.</p>
+        <p>This site is hosted on GitHub Pages and delivered through Cloudflare, which also provides its security protections (such as rate limiting and bot protection). Like any web host, they process your IP address and basic request details when you visit, to deliver the site and protect it from abuse, and keep this in short-lived operational logs under their own policies: the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement<span class="sr-only"> (opens in new tab)</span></a> and <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare's Privacy Policy<span class="sr-only"> (opens in new tab)</span></a>. Fieldnote Security does not use this data to identify or track visitors.</p>
+        <p>The contact form on this site is processed by <a href="https://formspree.io" target="_blank" rel="noopener noreferrer">Formspree<span class="sr-only"> (opens in new tab)</span></a>, a third-party form-handling service. Submitting the form sends your details to Formspree's infrastructure before they reach the company. Formspree's own handling of that data is governed by <a href="https://formspree.io/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Formspree's Privacy Policy<span class="sr-only"> (opens in new tab)</span></a>.</p>
+        <p>If you use the AI chat assistant, your message is sent to <a href="https://www.cloudflare.com/trust-hub/" target="_blank" rel="noopener noreferrer">Cloudflare Workers AI<span class="sr-only"> (opens in new tab)</span></a> to generate a reply. Cloudflare's own handling of that data is governed by <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare's Privacy Policy<span class="sr-only"> (opens in new tab)</span></a>.</p>
         <p>Apart from the services above, no other third party receives data collected through this site.</p>
 
         <h2>Cookies and tracking</h2>
@@ -116,7 +117,7 @@
         <p>Under UK GDPR you can ask to access, correct, or delete the personal data held about you, or ask that its use be restricted. To make any of these requests, email <a href="mailto:contact@fieldnotesecurity.com">contact@fieldnotesecurity.com</a>.</p>
 
         <h2>Complaints</h2>
-        <p>If you're unhappy with how your data has been handled, you can raise it directly first, or complain to the UK's data protection regulator, the Information Commissioner's Office, at <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">ico.org.uk</a>.</p>
+        <p>If you're unhappy with how your data has been handled, you can raise it directly first, or complain to the UK's data protection regulator, the Information Commissioner's Office, at <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">ico.org.uk<span class="sr-only"> (opens in new tab)</span></a>.</p>
         <p class="legal-placeholder">[ICO registration number - add once registered]</p>
 
         <h2>Changes to this policy</h2>

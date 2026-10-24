@@ -25,15 +25,16 @@
 </script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to main content</a>
 
 <header class="site-header">
   <div class="container nav-row">
     <a href="index.html" class="wordmark">Field<span>note</span> Security</a>
     <nav class="nav-links" id="mobileNav">
       <div class="nav-dropdown">
-        <a href="services.html" class="nav-dropdown-toggle" id="servicesToggle">Services</a>
+        <a href="services.html" class="nav-dropdown-link" id="servicesLink">Services</a>
+        <button type="button" class="nav-dropdown-toggle" id="servicesToggle" aria-expanded="false" aria-controls="servicesMenu" aria-label="Services menu"></button>
         <div class="nav-dropdown-menu" id="servicesMenu">
-          <a href="services.html" class="nav-dropdown-view-all">View all services</a>
           <a href="gdpr-checker.html">GDPR Checker</a>
           <a href="email-security.html">Email Security</a>
           <a href="accessibility-checker.html">Accessibility</a>
@@ -58,7 +59,7 @@
   </div>
 </header>
 
-<main>
+<main id="main" tabindex="-1">
 
   <section class="page-hero">
     <div class="container">
@@ -112,7 +113,7 @@
 
       <div class="cert-block reveal">
         <div class="cert-block-head">
-          <a href="https://www.credly.com/earner/earned/badge/6a81ed78-ea67-4c29-8412-70d5df80a610" target="_blank" rel="noopener noreferrer" class="cert-badge-link" aria-label="Verify Cisco Certified Ethical Hacker certification on Credly">
+          <a href="https://www.credly.com/earner/earned/badge/6a81ed78-ea67-4c29-8412-70d5df80a610" target="_blank" rel="noopener noreferrer" class="cert-badge-link" aria-label="Verify Cisco Certified Ethical Hacker certification on Credly (opens in new tab)">
             <img src="images/ethical-hacker.png" alt="Cisco Certified Ethical Hacker verified badge" class="cert-badge" width="88" height="88" loading="lazy">
           </a>
           <div>
@@ -136,7 +137,7 @@
 
       <div class="cert-block reveal">
         <div class="cert-block-head">
-          <a href="https://www.credly.com/badges/a3a97f64-ce75-47d0-8944-26fa436bb179/linked_in?t=tfyffo" target="_blank" rel="noopener noreferrer" class="cert-badge-link" aria-label="Verify Cisco CyberOps Associate certification on Credly">
+          <a href="https://www.credly.com/badges/a3a97f64-ce75-47d0-8944-26fa436bb179/linked_in?t=tfyffo" target="_blank" rel="noopener noreferrer" class="cert-badge-link" aria-label="Verify Cisco CyberOps Associate certification on Credly (opens in new tab)">
             <img src="images/cyberops-associate.png" alt="Cisco CyberOps Associate verified badge" class="cert-badge" width="88" height="88" loading="lazy">
           </a>
           <div>

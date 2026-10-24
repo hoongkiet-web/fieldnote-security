@@ -37,15 +37,16 @@
 </script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to main content</a>
 
 <header class="site-header">
   <div class="container nav-row">
     <a href="index.html" class="wordmark">Field<span>note</span> Security</a>
     <nav class="nav-links" id="mobileNav">
       <div class="nav-dropdown">
-        <a href="services.html" class="nav-dropdown-toggle" id="servicesToggle">Services</a>
+        <a href="services.html" class="nav-dropdown-link" id="servicesLink">Services</a>
+        <button type="button" class="nav-dropdown-toggle" id="servicesToggle" aria-expanded="false" aria-controls="servicesMenu" aria-label="Services menu"></button>
         <div class="nav-dropdown-menu" id="servicesMenu">
-          <a href="services.html" class="nav-dropdown-view-all">View all services</a>
           <a href="gdpr-checker.html">GDPR Checker</a>
           <a href="email-security.html">Email Security</a>
           <a href="accessibility-checker.html">Accessibility</a>
@@ -70,7 +71,7 @@
   </div>
 </header>
 
-<main>
+<main id="main" tabindex="-1">
 
   <section class="page-hero">
     <div class="container">
@@ -112,9 +113,9 @@
       </div>
       <div class="process-strip reveal">
         <strong>You submit your domain</strong>
-        <span class="arrow">→</span>
+        <span class="arrow" aria-hidden="true">→</span>
         <strong>I run the scan and review it</strong>
-        <span class="arrow">→</span>
+        <span class="arrow" aria-hidden="true">→</span>
         <strong>You get a prioritized report of what's exposed and misconfigured</strong>
       </div>
     </div>

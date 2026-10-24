@@ -258,23 +258,16 @@ h1, h2, h3 {
    group is visually and structurally indistinguishable from flat nav-links
    siblings - same DOM order, same existing flat hamburger-menu experience,
    completely unaffected. The matching JS guard (js/main.js) also refuses to
-   attach any interactive/ARIA behavior below 1280px, so this isn't relying
+   attach any interactive behavior below 1280px, so this isn't relying
    on CSS alone to keep mobile inert. */
 .nav-dropdown,
 .nav-dropdown-menu {
   display: contents;
 }
 
-/* FS-91 follow-up (2026-09-08): "View all services" is a genuinely new
-   element with no reason to exist below 1280px - mobile's plain "Services"
-   link (never converted into a toggle there) already points to the same
-   services.html URL, so unwrapping this item into the flat list alongside
-   the five service links would put a fully redundant duplicate directly
-   under "Services". The five service links themselves are correctly left
-   alone by this rule - they were always meant to flow into the mobile flat
-   list, same as before FS-91's dropdown existed. Overridden back to visible
-   at >=1280px below, alongside the rest of the desktop-only dropdown. */
-.nav-dropdown-menu a.nav-dropdown-view-all {
+/* a11y F13: the menu button is desktop-only. display:none keeps it out of the
+   tab order and the accessibility tree, so the mobile flat list is unchanged. */
+.nav-dropdown-toggle {
   display: none;
 }
 
@@ -283,21 +276,34 @@ h1, h2, h3 {
    one of the items inside the - possibly closed - dropdown, so desktop
    visitors on e.g. gdpr-checker.html still see "Services" highlighted even
    without opening the menu. */
-.nav-dropdown-toggle.nav-dropdown-toggle-active {
+.nav-links a.nav-dropdown-link.nav-dropdown-link-active {
   color: var(--text-primary);
 }
 
 @media (min-width: 1280px) {
   .nav-dropdown {
     display: inline-flex;
+    align-items: center;
+    gap: 2px;
     position: relative;
   }
 
+  /* Separate menu button beside the real "Services" link (WCAG 4.1.2). */
   .nav-dropdown-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
   }
+  .nav-dropdown-toggle:hover { color: var(--text-primary); }
+  .nav-dropdown-toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent); }
   .nav-dropdown-toggle::after {
     content: "";
     width: 6px;
@@ -340,20 +346,6 @@ h1, h2, h3 {
     color: var(--text-primary);
     text-decoration: none;
   }
-
-  /* FS-91 follow-up: link to the services overview page itself, visually
-     separated from the five specific service links below it since desktop
-     "Services" only toggles the panel and no longer navigates there. First
-     in the panel (moved 2026-09-08) so it's also what focus-on-open lands
-     on - the border sits below it now, not above, to keep separating it
-     from the specific-service items rather than from the panel's own edge. */
-  .nav-dropdown-menu a.nav-dropdown-view-all {
-    display: block;
-    margin-bottom: 4px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-secondary);
-  }
 }
 
 .btn {
@@ -378,6 +370,32 @@ h1, h2, h3 {
   color: var(--on-accent);
 }
 .btn-primary:hover { background: var(--accent-hover); }
+
+/* Skip link (WCAG 2.4.1): first element in <body> on every page. Off-screen
+   until focused, then top-left above the sticky header (z-index 40), styled
+   like .btn.btn-primary. */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  transform: translateY(-200%);
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 11px 20px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--on-accent);
+  text-decoration: none;
+}
+.skip-link:focus {
+  transform: none;
+  outline: none;
+  box-shadow: 0 0 0 3px var(--text-primary);
+}
 
 .btn-ghost {
   background: transparent;
@@ -859,7 +877,8 @@ section.tight { padding: 40px 0; }
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-.compare-wrap:focus-visible {
+.compare-wrap:focus-visible,
+.report-section-body:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--accent);
 }
@@ -982,7 +1001,7 @@ section.tight { padding: 40px 0; }
   color: var(--text-secondary);
 }
 .process-strip strong { color: var(--text-primary); font-weight: 600; }
-.process-strip .arrow { color: var(--text-muted); }
+.process-strip .arrow { color: var(--text-secondary); }
 
 /* ---------- pull statement ---------- */
 

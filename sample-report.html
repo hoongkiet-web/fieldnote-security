@@ -25,15 +25,16 @@
 </script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to main content</a>
 
 <header class="site-header">
   <div class="container nav-row">
     <a href="index.html" class="wordmark">Field<span>note</span> Security</a>
     <nav class="nav-links" id="mobileNav">
       <div class="nav-dropdown">
-        <a href="services.html" class="nav-dropdown-toggle" id="servicesToggle">Services</a>
+        <a href="services.html" class="nav-dropdown-link" id="servicesLink">Services</a>
+        <button type="button" class="nav-dropdown-toggle" id="servicesToggle" aria-expanded="false" aria-controls="servicesMenu" aria-label="Services menu"></button>
         <div class="nav-dropdown-menu" id="servicesMenu">
-          <a href="services.html" class="nav-dropdown-view-all">View all services</a>
           <a href="gdpr-checker.html">GDPR Checker</a>
           <a href="email-security.html">Email Security</a>
           <a href="accessibility-checker.html">Accessibility</a>
@@ -58,7 +59,7 @@
   </div>
 </header>
 
-<main>
+<main id="main" tabindex="-1">
 
   <section class="page-hero">
     <div class="container">
@@ -88,7 +89,7 @@
 
           <div class="report-section">
             <h2>DNS Reconnaissance</h2>
-            <div class="report-section-body">
+            <div class="report-section-body" tabindex="0" role="region" aria-label="DNS reconnaissance table">
               <table class="report-table">
                 <tr><th>Type</th><th>Value</th></tr>
                 <tr><td>A</td><td class="mono">104.20.23.154</td></tr>
@@ -103,7 +104,7 @@
 
           <div class="report-section">
             <h2>Port Scan Results</h2>
-            <div class="report-section-body">
+            <div class="report-section-body" tabindex="0" role="region" aria-label="Port scan results table">
               <table class="report-table">
                 <tr><th>Port</th><th>Service</th><th>Risk</th></tr>
                 <tr><td class="mono">25</td><td>SMTP</td><td><span class="badge badge-medium">MEDIUM</span></td></tr>
@@ -117,7 +118,7 @@
 
           <div class="report-section">
             <h2>SSL/TLS Analysis</h2>
-            <div class="report-section-body">
+            <div class="report-section-body" tabindex="0" role="region" aria-label="SSL/TLS analysis tables">
               <table class="report-table">
                 <tr><th>Property</th><th>Value</th></tr>
                 <tr><td>Issuer</td><td class="mono">Cloudflare TLS Issuing ECC CA 3</td></tr>
@@ -135,7 +136,7 @@
 
           <div class="report-section">
             <h2>Web Security Headers</h2>
-            <div class="report-section-body">
+            <div class="report-section-body" tabindex="0" role="region" aria-label="Web security headers table">
               <table class="report-table">
                 <tr><th>Missing Header</th><th>Severity</th><th>Recommendation</th></tr>
                 <tr><td class="mono">Strict-Transport-Security</td><td><span class="badge badge-high">HIGH</span></td><td>max-age=31536000; includeSubDomains; preload</td></tr>
