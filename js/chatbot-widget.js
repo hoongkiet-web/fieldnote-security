@@ -53,6 +53,15 @@
     'font-weight:600;font-size:0.85rem;cursor:pointer;}',
     '.fns-chat-send:disabled,.fns-chat-send[aria-disabled="true"]{opacity:0.5;cursor:not-allowed;}',
     '.fns-chat-disclaimer{font-size:0.66rem;color:var(--text-secondary);padding:0 16px 10px;}',
+    // a11y F3 (WCAG 1.4.10): only the history shrinks, so the close button, form and disclaimer are never clipped.
+    '.fns-chat-head,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}',
+    '.fns-chat-body{min-height:0;}',
+    // Short viewports (e.g. 400% zoom): full-height sheet; history keeps 96px and the panel scrolls instead of clipping.
+    // The panel stacks above the launcher (z-index 9999 vs 9998), so bottom:8px leaves Send uncovered.
+    '@media (max-height:500px){',
+    '.fns-chat-panel{top:8px;bottom:8px;right:8px;max-height:none;width:min(360px,calc(100vw - 16px));overflow-y:auto;}',
+    '.fns-chat-body{flex:1 0 96px;}',
+    '}',
   ].join('');
   document.head.appendChild(style);
 

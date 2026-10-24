@@ -404,3 +404,34 @@ describe('chatbot-widget.js: focus during send and close target (a11y chunk 3)',
     expect(css).toContain('.fns-chat-send:disabled,.fns-chat-send[aria-disabled="true"]{opacity:0.5;cursor:not-allowed;}');
   });
 });
+
+// a11y chunk 6a (F3, WCAG 1.4.10): full-height sheet under 500px tall. jsdom has
+// no layout, so these check the injected CSS text, not rendered sizes.
+describe('chatbot-widget.js: short-screen sheet (a11y chunk 6a)', () => {
+  const styleText = () => {
+    loadWidget();
+    return document.head.querySelector('style').textContent;
+  };
+
+  it('head, form and disclaimer never shrink and the body may shrink to 0', () => {
+    const css = styleText();
+    expect(css).toContain('.fns-chat-head,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}');
+    expect(css).toContain('.fns-chat-body{min-height:0;}');
+  });
+
+  it('under 500px tall the panel is a full-height scrolling sheet and history keeps 96px', () => {
+    const block = styleText().match(/@media \(max-height:500px\)\{(.*)\}$/)[1];
+    const panel = block.match(/\.fns-chat-panel\{([^}]*)\}/)[1];
+    for (const decl of ['top:8px', 'bottom:8px', 'right:8px', 'max-height:none', 'width:min(360px,calc(100vw - 16px))', 'overflow-y:auto']) {
+      expect(panel).toContain(decl);
+    }
+    expect(block).toContain('.fns-chat-body{flex:1 0 96px;}');
+  });
+
+  it('the normal panel rule is unchanged (bottom 88px, same max-height)', () => {
+    const css = styleText();
+    expect(css).toContain('.fns-chat-panel{position:fixed;bottom:88px;right:20px;width:min(360px,calc(100vw - 40px));'
+      + 'max-height:min(520px,calc(100vh - 140px));');
+    expect(css.indexOf('.fns-chat-panel{position:fixed;bottom:88px')).toBeLessThan(css.indexOf('@media (max-height:500px)'));
+  });
+});
