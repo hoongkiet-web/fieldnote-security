@@ -457,11 +457,22 @@ describe('chatbot-widget.js: label, reduced motion and status announcements (Gat
     expect(focusables.map((el) => el.id || el.className)).toEqual(['fns-chat-close', 'fnsChatInput', 'fnsChatSend']);
   });
 
-  it('B1: the label rule is small secondary text with the form padding and never shrinks', () => {
+  it('B1: the label rule is small secondary text with the form side padding and never shrinks', () => {
     loadWidget();
     const rule = css().match(/\.fns-chat-label\{([^}]*)\}/)[1];
-    for (const decl of ['font-size:0.72rem', 'color:var(--text-secondary)', 'padding:0 16px']) expect(rule).toContain(decl);
+    for (const decl of ['font-size:0.72rem', 'color:var(--text-secondary)', 'padding:12px 16px 0']) expect(rule).toContain(decl);
     expect(css()).toMatch(/\.fns-chat-label[^{]*\{flex-shrink:0;\}/);
+  });
+
+  // Text checks on the injected CSS only: jsdom does no layout, so where the line is
+  // drawn on screen is confirmed in Chrome, not here.
+  it('B1: the one dividing line is above the label; the form has no top border and a 6px gap to the label', () => {
+    loadWidget();
+    const label = css().match(/\.fns-chat-label\{([^}]*)\}/)[1];
+    const form = css().match(/\.fns-chat-form\{([^}]*)\}/)[1];
+    expect(label).toContain('border-top:1px solid var(--border-subtle)');
+    expect(form).not.toContain('border-top');
+    expect(form).toContain('padding:6px 16px 12px');
   });
 
   it('B2: the injected style turns off the launcher motion under prefers-reduced-motion', () => {

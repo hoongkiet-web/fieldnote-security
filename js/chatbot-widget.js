@@ -46,8 +46,9 @@
     '.fns-msg-user{align-self:flex-end;background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--text-primary);}',
     '.fns-msg-bot{align-self:flex-start;background:var(--bg);border:1px solid var(--border-subtle);color:var(--text-primary);}',
     '.fns-msg-bot a{text-decoration:underline;}',
-    '.fns-chat-label{display:block;font-size:0.72rem;color:var(--text-secondary);padding:0 16px;}',
-    '.fns-chat-form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border-subtle);}',
+    // One dividing line, above the label, so the label and its box sit together; 6px between them.
+    '.fns-chat-label{display:block;font-size:0.72rem;color:var(--text-secondary);padding:12px 16px 0;border-top:1px solid var(--border-subtle);}',
+    '.fns-chat-form{display:flex;gap:8px;padding:6px 16px 12px;}',
     '.fns-chat-input{flex:1;background:var(--bg);border:1px solid var(--field-border);border-radius:8px;color:var(--text-primary);',
     'padding:8px 10px;font-size:0.85rem;font-family:var(--font-body);resize:none;}',
     '.fns-chat-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}',
