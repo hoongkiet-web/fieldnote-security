@@ -354,6 +354,21 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     }
   });
 
+  // Byte-level guard: compares char codes, so neither a plain space (32) nor a
+  // literal "u00a0" text left by a bad edit can pass.
+  it('each speaker label ends with char code 160 preceded by ":"', async () => {
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'why';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    const labels = [document.querySelector('.fns-msg-user .sr-only'), document.querySelectorAll('.fns-msg-bot')[1].querySelector('.sr-only')];
+    for (const label of labels) {
+      const text = label.textContent;
+      expect(text.charCodeAt(text.length - 1)).toBe(160);
+      expect(text.charAt(text.length - 2)).toBe(':');
+    }
+  });
+
   it('message text is never parsed as HTML', async () => {
     global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: '<img src=x onerror=alert(1)>' }) });
     loadWidget();
