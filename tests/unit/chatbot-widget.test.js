@@ -123,9 +123,12 @@ describe('chatbot-widget.js: request history is capped at 6 entries', () => {
     try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
   });
 
-  it('sends only the last 6 of 10 earlier entries, but keeps all 10 on screen', async () => {
+  // Gate 2 chunk 1 (B6): the worker keeps user entries only, so the widget sends
+  // only the visitor's own earlier messages - the newest 6, in order.
+  it('with 10 earlier mixed entries, sends only the newest 6 user entries in order, never the current message, and keeps all 10 on screen', async () => {
+    // 8 user entries (m0-m2, m4-m6, m8-m9) and 2 assistant entries (m3, m7).
     const earlier = [];
-    for (let i = 0; i < 10; i++) earlier.push({ role: i % 2 ? 'assistant' : 'user', content: `m${i}` });
+    for (let i = 0; i < 10; i++) earlier.push({ role: i === 3 || i === 7 ? 'assistant' : 'user', content: `m${i}` });
     sessionStorage.setItem('fns_chat_history', JSON.stringify(earlier));
     const fetchMock = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
     global.fetch = fetchMock;
@@ -138,8 +141,84 @@ describe('chatbot-widget.js: request history is capped at 6 entries', () => {
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(sent.message).toBe('newest');
-    expect(sent.history).toEqual(earlier.slice(-6));
+    expect(sent.history).toEqual(['m2', 'm4', 'm5', 'm6', 'm8', 'm9'].map((content) => ({ role: 'user', content })));
+    expect(sent.history.length).toBeLessThanOrEqual(6);
+    expect(sent.history.some((m) => m.content === 'newest')).toBe(false);
     expect(document.body.textContent).toContain('m0');
+  });
+
+  it('the request body never contains an assistant entry, even after a stored reply', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'first answer' }) });
+    global.fetch = fetchMock;
+    loadWidget();
+
+    document.querySelector('#fnsChatInput').value = 'first question';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    document.querySelector('#fnsChatInput').value = 'second question';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    const second = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(second.history).toEqual([{ role: 'user', content: 'first question' }]);
+    for (const call of fetchMock.mock.calls) {
+      expect(JSON.parse(call[1].body).history.every((m) => m.role === 'user')).toBe(true);
+    }
+  });
+});
+
+// Gate 2 chunk 1 (B5): error and fallback text is shown but never stored, so it
+// is not re-shown after a page change and never sent as history.
+describe('chatbot-widget.js: error text is shown but not stored', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    document.head.innerHTML = '';
+    delete window.__fnsGuardAgainstReentry;
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
+  });
+
+  const stored = () => JSON.parse(sessionStorage.getItem('fns_chat_history') || '[]');
+
+  async function sendThenSendAgain(firstResponse) {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ json: () => Promise.resolve(firstResponse) })
+      .mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
+    global.fetch = fetchMock;
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'first';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    const afterFirst = stored();
+    document.querySelector('#fnsChatInput').value = 'second';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    return { afterFirst, next: JSON.parse(fetchMock.mock.calls[1][1].body) };
+  }
+
+  it('a 429 error is rendered but is in neither sessionStorage nor the next request history', async () => {
+    const error = 'Rate limit reached. Please try again later, or email contact@fieldnotesecurity.com directly.';
+    const { afterFirst, next } = await sendThenSendAgain({ error });
+    expect(document.querySelectorAll('.fns-msg-bot')[1].lastChild.textContent).toBe(error);
+    expect(afterFirst).toEqual([{ role: 'user', content: 'first' }]);
+    expect(JSON.stringify(next.history)).not.toContain(error);
+    expect(next.history).toEqual([{ role: 'user', content: 'first' }]);
+  });
+
+  it('a reply-less 200 shows the fallback text but does not store it', async () => {
+    const { afterFirst, next } = await sendThenSendAgain({});
+    expect(document.querySelectorAll('.fns-msg-bot')[1].lastChild.textContent).toBe('Something went wrong - please try again.');
+    expect(afterFirst).toEqual([{ role: 'user', content: 'first' }]);
+    expect(JSON.stringify(next.history)).not.toContain('Something went wrong');
+  });
+
+  it('a normal reply is still stored and persisted', async () => {
+    const { afterFirst } = await sendThenSendAgain({ reply: 'real answer' });
+    expect(afterFirst).toEqual([
+      { role: 'user', content: 'first' },
+      { role: 'assistant', content: 'real answer' },
+    ]);
   });
 });
 
@@ -225,26 +304,28 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     expect(expanded()).toBe('false');
   });
 
-  it('#fnsChatBody becomes a polite log only after the restored history is rendered', () => {
+  // Gate 2 chunk 2 (B3): was "becomes a polite log only after the restored history
+  // is rendered". The body is no longer live at all, so the restore can no longer be
+  // announced through it; what still matters is that the history is restored into a
+  // named, browsable group and that the status region says nothing on page load.
+  it('#fnsChatBody is a named group, not a live region, and restored history leaves the status empty', async () => {
     sessionStorage.setItem('fns_chat_history', JSON.stringify([
       { role: 'user', content: 'earlier question' },
       { role: 'assistant', content: 'earlier answer' },
     ]));
-    // Record the moment each restored message is appended: the body must not be a live region yet.
-    const seen = [];
-    const original = Element.prototype.appendChild;
-    const spy = vi.spyOn(Element.prototype, 'appendChild').mockImplementation(function (child) {
-      if (this.id === 'fnsChatBody') seen.push(this.getAttribute('role'));
-      return original.call(this, child);
-    });
-    loadWidget();
-    spy.mockRestore();
-    expect(seen).toEqual([null, null]);
-    const body = document.getElementById('fnsChatBody');
-    expect(body.getAttribute('role')).toBe('log');
-    expect(body.getAttribute('aria-live')).toBe('polite');
-    expect(body.getAttribute('aria-label')).toBe('Conversation');
-    expect(body.querySelectorAll('.fns-msg')).toHaveLength(2);
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      loadWidget();
+      const body = document.getElementById('fnsChatBody');
+      expect(body.getAttribute('role')).toBe('group');
+      expect(body.hasAttribute('aria-live')).toBe(false);
+      expect(body.getAttribute('aria-label')).toBe('Conversation');
+      expect(body.querySelectorAll('.fns-msg')).toHaveLength(2);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(document.getElementById('fnsChatStatus').textContent).toBe('');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('a mocked reply appends a message with the "Assistant: " label; the user message has "You said: "', async () => {
@@ -253,12 +334,41 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     document.querySelector('#fnsChatSend').click();
     await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
     const bot = document.querySelectorAll('.fns-msg-bot')[1];
-    expect(bot.querySelector('.sr-only').textContent).toBe('Assistant: ');
-    expect(bot.textContent).toBe('Assistant: ok');
+    expect(bot.querySelector('.sr-only').textContent).toBe('Assistant:\u00a0');
+    expect(bot.textContent).toBe('Assistant:\u00a0ok');
     const user = document.querySelector('.fns-msg-user');
-    expect(user.querySelector('.sr-only').textContent).toBe('You said: ');
+    expect(user.querySelector('.sr-only').textContent).toBe('You said:\u00a0');
     expect(user.lastChild.nodeType).toBe(Node.TEXT_NODE);
     expect(user.lastChild.textContent).toBe('Hello there');
+  });
+
+  // Gate 2 chunk 1 (B4): a plain trailing space collapses at the end of the
+  // absolutely positioned .sr-only span ("You said:why"), a no-break space does not.
+  it('both speaker labels end with a no-break space (U+00A0), not a plain space', async () => {
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'why';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    const labels = [document.querySelector('.fns-msg-user .sr-only'), document.querySelectorAll('.fns-msg-bot')[1].querySelector('.sr-only')];
+    for (const label of labels) {
+      expect(label.textContent.endsWith('\u00a0')).toBe(true);
+      expect(label.textContent).not.toMatch(/ $/);
+    }
+  });
+
+  // Byte-level guard: compares char codes, so neither a plain space (32) nor a
+  // literal "u00a0" text left by a bad edit can pass.
+  it('each speaker label ends with char code 160 preceded by ":"', async () => {
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'why';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
+    const labels = [document.querySelector('.fns-msg-user .sr-only'), document.querySelectorAll('.fns-msg-bot')[1].querySelector('.sr-only')];
+    for (const label of labels) {
+      const text = label.textContent;
+      expect(text.charCodeAt(text.length - 1)).toBe(160);
+      expect(text.charAt(text.length - 2)).toBe(':');
+    }
   });
 
   it('message text is never parsed as HTML', async () => {
@@ -271,7 +381,10 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     expect(document.querySelector('#fnsChatBody b')).toBeNull();
   });
 
-  it('the status element says "Assistant is replying" while waiting and is cleared after the reply', async () => {
+  // Gate 2 chunk 2 (B3): was "... and is cleared after the reply". The status region
+  // now carries the reply itself, so the old end state ('') would only be a passing
+  // moment; this checks the same waiting message plus the real end state.
+  it('the status element says "Assistant is replying" while waiting, then "Assistant: <reply>"', async () => {
     let resolve;
     global.fetch = vi.fn(() => new Promise((r) => { resolve = r; }));
     loadWidget();
@@ -283,22 +396,132 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     document.querySelector('#fnsChatSend').click();
     expect(status.textContent).toBe('Assistant is replying');
     resolve({ json: () => Promise.resolve({ reply: 'done' }) });
-    await vi.waitFor(() => expect(status.textContent).toBe(''));
+    await vi.waitFor(() => expect(status.textContent).toBe('Assistant: done'));
   });
 
-  it('the status element is cleared when the request fails too', async () => {
+  // Gate 2 chunk 2 (B3): was "the status element is cleared when the request fails
+  // too". It still checks that "Assistant is replying" does not linger after a
+  // failure, and now that the failure text itself is announced.
+  it('after a network failure the status says "Assistant: " + the failure text shown in the chat', async () => {
     global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
     loadWidget();
     document.querySelector('#fnsChatInput').value = 'Hi';
     document.querySelector('#fnsChatSend').click();
-    await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
-    expect(document.getElementById('fnsChatStatus').textContent).toBe('');
+    await vi.waitFor(() => expect(document.getElementById('fnsChatStatus').textContent)
+      .toBe('Assistant: Something went wrong - please try again, or email contact@fieldnotesecurity.com.'));
   });
 
   it('the injected style gives .fns-chat-input a var(--field-border) border', () => {
     loadWidget();
     const css = document.head.querySelector('style').textContent;
     expect(css).toMatch(/\.fns-chat-input\{[^}]*border:1px solid var\(--field-border\)/);
+  });
+});
+
+// Gate 2 chunk 2: visible message label (B1), reduced motion for the launcher
+// (B2), replies and errors announced through #fnsChatStatus (B3). fetch is
+// always a mock; nothing reaches a live endpoint.
+describe('chatbot-widget.js: label, reduced motion and status announcements (Gate 2 chunk 2)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<main></main><footer></footer>';
+    document.head.innerHTML = '';
+    delete window.__fnsGuardAgainstReentry;
+    delete window.__fnsChatPanel;
+    delete window.__fnsMobileMenu;
+    try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
+  });
+
+  const status = () => document.getElementById('fnsChatStatus');
+  const css = () => document.head.querySelector('style').textContent;
+
+  it('B1: a visible label "Your message" names the textarea, which has no aria-label', () => {
+    loadWidget();
+    const input = document.getElementById('fnsChatInput');
+    const label = document.querySelector('.fns-chat-panel label.fns-chat-label');
+    expect(label).not.toBeNull();
+    expect(label.htmlFor).toBe('fnsChatInput');
+    expect(label.textContent).toBe('Your message');
+    expect(input.hasAttribute('aria-label')).toBe(false);
+    expect(input.getAttribute('placeholder')).toBe('Ask about services, pricing...');
+    // The name a screen reader uses comes from the associated <label>.
+    expect(Array.from(input.labels).map((l) => l.textContent)).toEqual(['Your message']);
+    // Directly above the form row, after the status region.
+    expect(label.nextElementSibling.id).toBe('fnsChatForm');
+    expect(label.previousElementSibling.id).toBe('fnsChatStatus');
+  });
+
+  it('B1: the label is not focusable, so the panel tab order is still close, textarea, Send', () => {
+    loadWidget();
+    const focusables = Array.from(document.querySelectorAll('.fns-chat-panel a[href], .fns-chat-panel button, .fns-chat-panel textarea, .fns-chat-panel input, .fns-chat-panel [tabindex]'));
+    expect(focusables.map((el) => el.id || el.className)).toEqual(['fns-chat-close', 'fnsChatInput', 'fnsChatSend']);
+  });
+
+  it('B1: the label rule is small secondary text with the form side padding and never shrinks', () => {
+    loadWidget();
+    const rule = css().match(/\.fns-chat-label\{([^}]*)\}/)[1];
+    for (const decl of ['font-size:0.72rem', 'color:var(--text-secondary)', 'padding:12px 16px 0']) expect(rule).toContain(decl);
+    expect(css()).toMatch(/\.fns-chat-label[^{]*\{flex-shrink:0;\}/);
+  });
+
+  // Text checks on the injected CSS only: jsdom does no layout, so where the line is
+  // drawn on screen is confirmed in Chrome, not here.
+  it('B1: the one dividing line is above the label; the form has no top border and a 6px gap to the label', () => {
+    loadWidget();
+    const label = css().match(/\.fns-chat-label\{([^}]*)\}/)[1];
+    const form = css().match(/\.fns-chat-form\{([^}]*)\}/)[1];
+    expect(label).toContain('border-top:1px solid var(--border-subtle)');
+    expect(form).not.toContain('border-top');
+    expect(form).toContain('padding:6px 16px 12px');
+  });
+
+  it('B2: the injected style turns off the launcher motion under prefers-reduced-motion', () => {
+    loadWidget();
+    expect(css()).toContain('@media (prefers-reduced-motion: reduce){.fns-chat-btn{transition:none}.fns-chat-btn:hover{transform:none}}');
+  });
+
+  it('B3: after a mocked 429 the status says "Assistant: " + the error text shown in the chat', async () => {
+    const error = 'Rate limit reached. Please try again later, or email contact@fieldnotesecurity.com directly.';
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ error }) });
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'Hi';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(status().textContent).toBe('Assistant: ' + error));
+  });
+
+  it('B3: a reply-less response announces the fallback text', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({}) });
+    loadWidget();
+    document.querySelector('#fnsChatInput').value = 'Hi';
+    document.querySelector('#fnsChatSend').click();
+    await vi.waitFor(() => expect(status().textContent).toBe('Assistant: Something went wrong - please try again.'));
+  });
+
+  it('B3: the status is cleared first and set 50 ms later, so the same reply twice is announced twice, and the visitor\'s own message never is', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      loadWidget();
+      const seen = [];
+      new MutationObserver(() => seen.push(status().textContent)).observe(status(), { childList: true, characterData: true, subtree: true });
+      const send = async (text) => {
+        document.querySelector('#fnsChatInput').value = text;
+        document.querySelector('#fnsChatSend').click();
+        await vi.advanceTimersByTimeAsync(0); // reply settles, status cleared, announcement pending
+        expect(status().textContent).toBe('');
+        await vi.advanceTimersByTimeAsync(49);
+        expect(status().textContent).toBe('');
+        await vi.advanceTimersByTimeAsync(1);
+        expect(status().textContent).toBe('Assistant: ok');
+      };
+      await send('first question');
+      await send('second question');
+      expect(seen).toEqual(['Assistant is replying', '', 'Assistant: ok', 'Assistant is replying', '', 'Assistant: ok']);
+      expect(seen.some((t) => t.includes('question') || t.includes('You said'))).toBe(false);
+      // The visitor's message is still rendered in the conversation.
+      expect(document.querySelectorAll('.fns-msg-user')).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -413,9 +636,9 @@ describe('chatbot-widget.js: short-screen sheet (a11y chunk 6a)', () => {
     return document.head.querySelector('style').textContent;
   };
 
-  it('head, form and disclaimer never shrink and the body may shrink to 0', () => {
+  it('head, label, form and disclaimer never shrink and the body may shrink to 0', () => {
     const css = styleText();
-    expect(css).toContain('.fns-chat-head,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}');
+    expect(css).toContain('.fns-chat-head,.fns-chat-label,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}');
     expect(css).toContain('.fns-chat-body{min-height:0;}');
   });
 

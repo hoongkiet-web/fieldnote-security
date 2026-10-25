@@ -134,3 +134,20 @@ describe('css/styles.css rules (chunk 5)', () => {
     expect(css).toMatch(/\.skip-link:focus \{[^}]*transform: none;/);
   });
 });
+
+describe('css/styles.css reduced motion (Gate 2 chunk 2, B2)', () => {
+  const css = fs.readFileSync(path.join(ROOT, 'css/styles.css'), 'utf-8');
+  // The whole @media block, up to its closing brace at the start of a line.
+  const start = css.indexOf('@media (prefers-reduced-motion: reduce) {');
+  const block = css.slice(start, css.indexOf('\n}', start));
+
+  it('there is one reduced-motion block and it keeps the reveal and scroll rules', () => {
+    expect(css.split('@media (prefers-reduced-motion: reduce)').length - 1).toBe(1);
+    expect(block).toContain('.js-ready .reveal {');
+    expect(block).toContain('html { scroll-behavior: auto; }');
+  });
+  it('turns off the hover and press motion of .btn, .cert-badge-link and the Services chevron', () => {
+    expect(block).toContain('.btn, .cert-badge-link, .nav-dropdown-toggle::after { transition: none; }');
+    expect(block).toContain('.btn:active, .cert-badge-link:hover { transform: none; }');
+  });
+});
