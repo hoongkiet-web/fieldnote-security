@@ -27,11 +27,51 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FORM_GUARD_SRC = fs.readFileSync(path.resolve(__dirname, '../../js/form-guard.js'), 'utf-8');
 const WIDGET_SRC = fs.readFileSync(path.resolve(__dirname, '../../js/chatbot-widget.js'), 'utf-8');
 
-function loadWidget() {
+// Gate 2 chunk 6: the widget only sends with a Turnstile token, and only hosts with a
+// sitekey load Turnstile. So by default the widget runs on the staging host (a stand-in
+// `location`, as in the endpoint tests below) with a fake window.turnstile that hands
+// out a fresh fake token on render and on every reset (as Turnstile pre-fetches the
+// next one). Nothing reaches challenges.cloudflare.com: jsdom never loads the script,
+// and turnstileLoaded() fires its load handler by hand.
+const STAGING_LOCATION = { hostname: 'staging.fieldnotesecurity.com' };
+
+function makeFakeTurnstile() {
+  let n = 0;
+  const t = {
+    autoToken: true,
+    opts: null,
+    render: vi.fn((el, opts) => { t.opts = opts; if (t.autoToken) opts.callback(`fake-token-${++n}`); return 'fake-widget'; }),
+    reset: vi.fn(() => { if (t.autoToken && t.opts) t.opts.callback(`fake-token-${++n}`); }),
+  };
+  return t;
+}
+
+function loadWidget(loc = STAGING_LOCATION, src = WIDGET_SRC) {
   // eslint-disable-next-line no-eval
   (0, eval)(FORM_GUARD_SRC);
-  // eslint-disable-next-line no-eval
-  (0, eval)(WIDGET_SRC);
+  window.turnstile = makeFakeTurnstile();
+  new Function('location', src)(loc);
+}
+
+function turnstileScripts() {
+  return document.querySelectorAll('script[src^="https://challenges.cloudflare.com/"]');
+}
+
+// Opens the panel once (the first open requests api.js) and runs the script's load handler once.
+function turnstileLoaded() {
+  if (turnstileScripts().length === 0 && !document.querySelector('.fns-chat-panel').classList.contains('open')) {
+    document.querySelector('.fns-chat-btn').click();
+  }
+  const script = turnstileScripts()[0];
+  if (script && !script.dataset.testLoaded) {
+    script.dataset.testLoaded = '1';
+    script.onload();
+  }
+}
+
+function clickSend() {
+  turnstileLoaded();
+  document.getElementById("fnsChatSend").click();
 }
 
 // The visible message text: since a11y chunk 2 each message starts with a
@@ -51,6 +91,7 @@ async function sendMessageAndGetMockedResponse(mockResponse) {
   const input = document.querySelector('#fnsChatInput');
   const sendBtn = document.querySelector('#fnsChatSend');
   input.value = 'What services do you offer?';
+  turnstileLoaded();
   sendBtn.click();
 
   // Real greeting (1) + the user's own message rendered synchronously (not
@@ -99,7 +140,7 @@ describe('chatbot-widget.js: reply-extraction fallback chain (data.reply || data
     const input = document.querySelector('#fnsChatInput');
     document.querySelector('#fnsChatSend');
     input.value = 'Hello';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
 
     await vi.waitFor(() => {
       expect(document.querySelectorAll('.fns-msg-bot').length).toBeGreaterThanOrEqual(2);
@@ -136,7 +177,7 @@ describe('chatbot-widget.js: request history is capped at 6 entries', () => {
 
     expect(document.querySelectorAll('.fns-msg').length).toBe(10);
     document.querySelector('#fnsChatInput').value = 'newest';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
 
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
@@ -153,10 +194,10 @@ describe('chatbot-widget.js: request history is capped at 6 entries', () => {
     loadWidget();
 
     document.querySelector('#fnsChatInput').value = 'first question';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
     document.querySelector('#fnsChatInput').value = 'second question';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
 
     const second = JSON.parse(fetchMock.mock.calls[1][1].body);
@@ -188,11 +229,11 @@ describe('chatbot-widget.js: error text is shown but not stored', () => {
     global.fetch = fetchMock;
     loadWidget();
     document.querySelector('#fnsChatInput').value = 'first';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
     const afterFirst = stored();
     document.querySelector('#fnsChatInput').value = 'second';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     return { afterFirst, next: JSON.parse(fetchMock.mock.calls[1][1].body) };
   }
@@ -232,22 +273,23 @@ describe('chatbot-widget.js: endpoint by hostname (FS-170 chunk 3)', () => {
     try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
   });
 
+  // Gate 2 chunk 6: only hosts with a Turnstile sitekey can send. There is no production
+  // sitekey yet (RELEASE BLOCKER), so the production rows run the real source with a fake
+  // one swapped in; localhost, 127.0.0.1 and unknown hosts can no longer send at all
+  // (covered in chatbot-turnstile.test.js).
+  const WITH_FAKE_PRODUCTION_SITEKEY = WIDGET_SRC.replace(/var PRODUCTION_SITEKEY = '[^']*';/, "var PRODUCTION_SITEKEY = 'fake-production-sitekey';");
+
   it.each([
     ['fieldnotesecurity.com', 'https://fieldnotesecurity.com/api/chat'],
     ['www.fieldnotesecurity.com', 'https://fieldnotesecurity.com/api/chat'],
     ['staging.fieldnotesecurity.com', '/api/chat'],
-    ['localhost', '/api/chat'],
-    ['127.0.0.1', '/api/chat'],
-    ['unknown.example', '/api/chat'],
   ])('host %s posts to %s, never workers.dev, credentials not omitted', async (hostname, expected) => {
     const fetchMock = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
     global.fetch = fetchMock;
-    // eslint-disable-next-line no-eval
-    (0, eval)(FORM_GUARD_SRC);
-    new Function('location', WIDGET_SRC)({ hostname });
+    loadWidget({ hostname }, WITH_FAKE_PRODUCTION_SITEKEY);
 
     document.querySelector('#fnsChatInput').value = 'Hello';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
 
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [url, init] = fetchMock.mock.calls[0];
@@ -331,7 +373,7 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
   it('a mocked reply appends a message with the "Assistant: " label; the user message has "You said: "', async () => {
     loadWidget();
     document.querySelector('#fnsChatInput').value = 'Hello there';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
     const bot = document.querySelectorAll('.fns-msg-bot')[1];
     expect(bot.querySelector('.sr-only').textContent).toBe('Assistant:\u00a0');
@@ -347,7 +389,7 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
   it('both speaker labels end with a no-break space (U+00A0), not a plain space', async () => {
     loadWidget();
     document.querySelector('#fnsChatInput').value = 'why';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
     const labels = [document.querySelector('.fns-msg-user .sr-only'), document.querySelectorAll('.fns-msg-bot')[1].querySelector('.sr-only')];
     for (const label of labels) {
@@ -361,7 +403,7 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
   it('each speaker label ends with char code 160 preceded by ":"', async () => {
     loadWidget();
     document.querySelector('#fnsChatInput').value = 'why';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
     const labels = [document.querySelector('.fns-msg-user .sr-only'), document.querySelectorAll('.fns-msg-bot')[1].querySelector('.sr-only')];
     for (const label of labels) {
@@ -375,7 +417,7 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: '<img src=x onerror=alert(1)>' }) });
     loadWidget();
     document.querySelector('#fnsChatInput').value = '<b>bold</b>';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(document.querySelectorAll('.fns-msg-bot')).toHaveLength(2));
     expect(document.querySelector('#fnsChatBody img')).toBeNull();
     expect(document.querySelector('#fnsChatBody b')).toBeNull();
@@ -393,7 +435,7 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     expect(status.classList.contains('sr-only')).toBe(true);
     expect(panel().contains(status)).toBe(true);
     document.querySelector('#fnsChatInput').value = 'Hi';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     expect(status.textContent).toBe('Assistant is replying');
     resolve({ json: () => Promise.resolve({ reply: 'done' }) });
     await vi.waitFor(() => expect(status.textContent).toBe('Assistant: done'));
@@ -406,7 +448,7 @@ describe('chatbot-widget.js: accessibility semantics (a11y chunk 2)', () => {
     global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
     loadWidget();
     document.querySelector('#fnsChatInput').value = 'Hi';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(document.getElementById('fnsChatStatus').textContent)
       .toBe('Assistant: Something went wrong - please try again, or email contact@fieldnotesecurity.com.'));
   });
@@ -446,9 +488,9 @@ describe('chatbot-widget.js: label, reduced motion and status announcements (Gat
     expect(input.getAttribute('placeholder')).toBe('Ask about services, pricing...');
     // The name a screen reader uses comes from the associated <label>.
     expect(Array.from(input.labels).map((l) => l.textContent)).toEqual(['Your message']);
-    // Directly above the form row, after the status region.
+    // Directly above the form row; Gate 2 chunk 6 put the Turnstile row and its notice between the status region and the label.
     expect(label.nextElementSibling.id).toBe('fnsChatForm');
-    expect(label.previousElementSibling.id).toBe('fnsChatStatus');
+    expect(label.previousElementSibling.id).toBe('fnsChatNotice');
   });
 
   it('B1: the label is not focusable, so the panel tab order is still close, textarea, Send', () => {
@@ -485,7 +527,7 @@ describe('chatbot-widget.js: label, reduced motion and status announcements (Gat
     global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ error }) });
     loadWidget();
     document.querySelector('#fnsChatInput').value = 'Hi';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(status().textContent).toBe('Assistant: ' + error));
   });
 
@@ -493,7 +535,7 @@ describe('chatbot-widget.js: label, reduced motion and status announcements (Gat
     global.fetch = vi.fn().mockResolvedValue({ json: () => Promise.resolve({}) });
     loadWidget();
     document.querySelector('#fnsChatInput').value = 'Hi';
-    document.querySelector('#fnsChatSend').click();
+    clickSend();
     await vi.waitFor(() => expect(status().textContent).toBe('Assistant: Something went wrong - please try again.'));
   });
 
@@ -505,7 +547,7 @@ describe('chatbot-widget.js: label, reduced motion and status announcements (Gat
       new MutationObserver(() => seen.push(status().textContent)).observe(status(), { childList: true, characterData: true, subtree: true });
       const send = async (text) => {
         document.querySelector('#fnsChatInput').value = text;
-        document.querySelector('#fnsChatSend').click();
+        clickSend();
         await vi.advanceTimersByTimeAsync(0); // reply settles, status cleared, announcement pending
         expect(status().textContent).toBe('');
         await vi.advanceTimersByTimeAsync(49);
@@ -547,6 +589,7 @@ describe('chatbot-widget.js: focus during send and close target (a11y chunk 3)',
   // Open the panel (focus goes to the textarea), type, press Enter: the keyboard path.
   function sendWithEnter(text) {
     document.querySelector('.fns-chat-btn').click();
+    turnstileLoaded(); // Gate 2 chunk 6: the token is ready before Enter
     const { input } = els();
     input.value = text;
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
@@ -591,6 +634,7 @@ describe('chatbot-widget.js: focus during send and close target (a11y chunk 3)',
     sendWithEnter('First');
     const { input, send } = els();
     input.value = 'Second';
+    turnstileLoaded();
     send.click();
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
     expect(global.fetch).toHaveBeenCalledTimes(1);
@@ -609,7 +653,8 @@ describe('chatbot-widget.js: focus during send and close target (a11y chunk 3)',
       sendWithEnter('First');
       const { input, send } = els();
       input.value = 'Second';
-      send.click();
+      turnstileLoaded();
+    send.click();
       input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
     } finally {
       window.removeEventListener('submit', record);
@@ -636,9 +681,10 @@ describe('chatbot-widget.js: short-screen sheet (a11y chunk 6a)', () => {
     return document.head.querySelector('style').textContent;
   };
 
-  it('head, label, form and disclaimer never shrink and the body may shrink to 0', () => {
+  it('head, verification row, notice, label, form and disclaimer never shrink and the body may shrink to 0', () => {
     const css = styleText();
-    expect(css).toContain('.fns-chat-head,.fns-chat-label,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}');
+    // Gate 2 chunk 6 added the Turnstile row and its notice to the never-shrink list.
+    expect(css).toContain('.fns-chat-head,.fns-chat-verify,.fns-chat-notice,.fns-chat-label,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}');
     expect(css).toContain('.fns-chat-body{min-height:0;}');
   });
 
