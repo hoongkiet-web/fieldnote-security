@@ -20,12 +20,12 @@
 
   // Gate 2 chunk 6: Cloudflare Turnstile (Managed widget), loaded on the first
   // chat open only, one token per message. Sitekeys are public, chosen by hostname.
-  // RELEASE BLOCKER: set before merging to main.
-  var PRODUCTION_SITEKEY = '';
+  // www has no sitekey: the production widget and the chatbot accept only
+  // fieldnotesecurity.com (www 301-redirects there), so www shows the notice.
+  var PRODUCTION_SITEKEY = '0x4AAAAAAFq2NF692tBmjkXV';
   var SITEKEYS = {
     'staging.fieldnotesecurity.com': '0x4AAAAAAFqNdyqDJz-7b8Gj',
     'fieldnotesecurity.com': PRODUCTION_SITEKEY,
-    'www.fieldnotesecurity.com': PRODUCTION_SITEKEY,
   };
   var SITEKEY = Object.prototype.hasOwnProperty.call(SITEKEYS, location.hostname) ? SITEKEYS[location.hostname] : '';
   var TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';

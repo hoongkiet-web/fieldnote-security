@@ -274,20 +274,16 @@ describe('chatbot-widget.js: endpoint by hostname (FS-170 chunk 3)', () => {
     try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
   });
 
-  // Gate 2 chunk 6: only hosts with a Turnstile sitekey can send. There is no production
-  // sitekey yet (RELEASE BLOCKER), so the production rows run the real source with a fake
-  // one swapped in; localhost, 127.0.0.1 and unknown hosts can no longer send at all
-  // (covered in chatbot-turnstile.test.js).
-  const WITH_FAKE_PRODUCTION_SITEKEY = WIDGET_SRC.replace(/var PRODUCTION_SITEKEY = '[^']*';/, "var PRODUCTION_SITEKEY = 'fake-production-sitekey';");
-
+  // Gate 2 chunk 6: only hosts with a Turnstile sitekey can send. www, localhost,
+  // 127.0.0.1 and unknown hosts have none and can never send (covered in
+  // chatbot-turnstile.test.js).
   it.each([
     ['fieldnotesecurity.com', 'https://fieldnotesecurity.com/api/chat'],
-    ['www.fieldnotesecurity.com', 'https://fieldnotesecurity.com/api/chat'],
     ['staging.fieldnotesecurity.com', '/api/chat'],
   ])('host %s posts to %s, never workers.dev, credentials not omitted', async (hostname, expected) => {
     const fetchMock = vi.fn().mockResolvedValue({ json: () => Promise.resolve({ reply: 'ok' }) });
     global.fetch = fetchMock;
-    loadWidget({ hostname }, WITH_FAKE_PRODUCTION_SITEKEY);
+    loadWidget({ hostname });
 
     document.querySelector('#fnsChatInput').value = 'Hello';
     clickSend();

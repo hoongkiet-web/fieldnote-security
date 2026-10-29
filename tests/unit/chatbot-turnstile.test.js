@@ -13,6 +13,7 @@ const FORM_GUARD_SRC = fs.readFileSync(path.resolve(__dirname, '../../js/form-gu
 const WIDGET_SRC = fs.readFileSync(path.resolve(__dirname, '../../js/chatbot-widget.js'), 'utf-8');
 
 const STAGING_SITEKEY = '0x4AAAAAAFqNdyqDJz-7b8Gj';
+const PRODUCTION_SITEKEY = '0x4AAAAAAFq2NF692tBmjkXV';
 const API_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 const NOT_AVAILABLE = 'Chat is not available right now. Please use the contact form.';
 const LOAD_FAILED = 'Verification could not load. Please try again later or use the contact form.';
@@ -129,7 +130,16 @@ describe('render', () => {
     expect(document.activeElement).toBe($('#fnsChatInput'));
   });
 
-  it.each(['fieldnotesecurity.com', 'www.fieldnotesecurity.com', 'localhost', 'unknown.example'])(
+  it('on the production host: production sitekey, action chat', () => {
+    const t = loadWidget('fieldnotesecurity.com');
+    openChat();
+    fireLoad();
+    expect(t.render).toHaveBeenCalledTimes(1);
+    expect(t.render.mock.calls[0][1]).toMatchObject({ sitekey: PRODUCTION_SITEKEY, action: 'chat' });
+    expect(notice().hidden).toBe(true);
+  });
+
+  it.each(['www.fieldnotesecurity.com', 'localhost', 'unknown.example'])(
     'host %s (no sitekey): no script, no render, the not-available notice with the contact link, Send unusable, never sends',
     async (hostname) => {
       const t = loadWidget(hostname);
@@ -147,9 +157,10 @@ describe('render', () => {
     },
   );
 
-  it('the production sitekey is still empty (RELEASE BLOCKER)', () => {
-    expect(WIDGET_SRC).toMatch(/var PRODUCTION_SITEKEY = '';/);
-    expect(WIDGET_SRC).toContain('RELEASE BLOCKER: set before merging to main');
+  it('the sitekey map: staging and fieldnotesecurity.com only, no release blocker left', () => {
+    expect(WIDGET_SRC).toContain(`var PRODUCTION_SITEKEY = '${PRODUCTION_SITEKEY}';`);
+    expect(WIDGET_SRC).not.toMatch(/'www\.fieldnotesecurity\.com':/);
+    expect(WIDGET_SRC).not.toContain('RELEASE BLOCKER');
   });
 });
 
