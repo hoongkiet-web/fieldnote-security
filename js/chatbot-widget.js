@@ -18,6 +18,28 @@
   var STORAGE_KEY = 'fns_chat_history';
   var history = [];
 
+  // Gate 2 chunk 6: Cloudflare Turnstile (Managed widget), loaded on the first
+  // chat open only, one token per message. Sitekeys are public, chosen by hostname.
+  // www has no sitekey: the production widget and the chatbot accept only
+  // fieldnotesecurity.com (www 301-redirects there), so www shows the notice.
+  var PRODUCTION_SITEKEY = '0x4AAAAAAFq2NF692tBmjkXV';
+  var SITEKEYS = {
+    'staging.fieldnotesecurity.com': '0x4AAAAAAFqNdyqDJz-7b8Gj',
+    'fieldnotesecurity.com': PRODUCTION_SITEKEY,
+  };
+  var SITEKEY = Object.prototype.hasOwnProperty.call(SITEKEYS, location.hostname) ? SITEKEYS[location.hostname] : '';
+  var TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+  var NOT_AVAILABLE_TEXT = 'Chat is not available right now. Please use the contact form.';
+  var LOAD_FAILED_TEXT = 'Verification could not load. Please try again later or use the contact form.';
+  var VERIFYING_TEXT = 'Verifying you are human, please wait.';
+  var turnstileStarted = false;
+  var verifyProblem = ''; // NOT_AVAILABLE_TEXT or LOAD_FAILED_TEXT once chat cannot be verified
+  var widgetId = null;
+  var turnstileToken = null; // in this variable only: never stored, logged or put in history
+  var renderedTheme = null;
+  var requestInFlight = false;
+  var rerenderPending = false;
+
   try {
     var saved = sessionStorage.getItem(STORAGE_KEY);
     if (saved) history = JSON.parse(saved);
@@ -56,8 +78,11 @@
     'font-weight:600;font-size:0.85rem;cursor:pointer;}',
     '.fns-chat-send:disabled,.fns-chat-send[aria-disabled="true"]{opacity:0.5;cursor:not-allowed;}',
     '.fns-chat-disclaimer{font-size:0.66rem;color:var(--text-secondary);padding:0 16px 10px;}',
+    '.fns-chat-verify{padding:0 16px;}',
+    '.fns-chat-notice{font-size:0.8rem;color:var(--text-primary);padding:8px 16px 0;}',
+    '.fns-chat-notice a{text-decoration:underline;}',
     // a11y F3 (WCAG 1.4.10): only the history shrinks, so the close button, label, form and disclaimer are never clipped.
-    '.fns-chat-head,.fns-chat-label,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}',
+    '.fns-chat-head,.fns-chat-verify,.fns-chat-notice,.fns-chat-label,.fns-chat-form,.fns-chat-disclaimer{flex-shrink:0;}',
     '.fns-chat-body{min-height:0;}',
     // Short viewports (e.g. 400% zoom): full-height sheet; history keeps 96px and the panel scrolls instead of clipping.
     // The panel stacks above the launcher (z-index 9999 vs 9998), so bottom:8px leaves Send uncovered.
@@ -90,6 +115,9 @@
     '</div>' +
     '<div class="fns-chat-body" id="fnsChatBody"></div>' +
     '<div class="sr-only" role="status" id="fnsChatStatus"></div>' +
+    // Between the history and the message box, so Turnstile's iframe sits in the native Tab order (Gate 1 A3).
+    '<div class="fns-chat-verify" id="fnsChatVerify" role="group" aria-label="Verification"></div>' +
+    '<p class="fns-chat-notice" id="fnsChatNotice" hidden></p>' +
     '<label for="fnsChatInput" class="fns-chat-label">Your message</label>' +
     '<form class="fns-chat-form" id="fnsChatForm">' +
       '<textarea class="fns-chat-input" id="fnsChatInput" rows="1" maxlength="800" placeholder="Ask about services, pricing..."></textarea>' +
@@ -106,6 +134,8 @@
   var sendBtn = panel.querySelector('#fnsChatSend');
   var closeBtn = panel.querySelector('.fns-chat-close');
   var statusEl = panel.querySelector('#fnsChatStatus');
+  var verifyEl = panel.querySelector('#fnsChatVerify');
+  var noticeEl = panel.querySelector('#fnsChatNotice');
 
   // FS-133: background the open panel overlays, for the same inert-based
   // trap FS-50 already uses for the mobile menu (js/main.js). Deliberately
@@ -136,6 +166,7 @@
     btn.setAttribute('aria-expanded', 'true');
     setChatBackgroundInert(true);
     input.focus();
+    startTurnstile();
   }
 
   function closePanel() {
@@ -230,6 +261,99 @@
     announce('Assistant: ' + text);
   }
 
+  // Chat cannot be verified: visible notice with the contact link, announced, Send unusable.
+  function showVerifyProblem(text) {
+    turnstileToken = null;
+    verifyProblem = text;
+    noticeEl.textContent = text + ' ';
+    var link = document.createElement('a');
+    link.href = 'contact.html';
+    link.textContent = 'Go to the contact form';
+    noticeEl.appendChild(link);
+    noticeEl.hidden = false;
+    sendBtn.setAttribute('aria-disabled', 'true');
+    announce(text);
+  }
+
+  function resetTurnstile() {
+    turnstileToken = null;
+    if (widgetId === null || !window.turnstile) return;
+    try { window.turnstile.reset(widgetId); } catch (e) { /* the next send waits for a token */ }
+  }
+
+  // The theme the site is showing: same rule as currentTheme() in js/main.js (saved choice on
+  // <html data-theme>, else the OS preference), so the widget matches the site's own switch.
+  function siteTheme() {
+    var t = document.documentElement.getAttribute('data-theme');
+    if (t === 'light' || t === 'dark') return t;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  // Theme changed after render: replace the widget (its theme is fixed at render), never two at once.
+  // During a request, wait until it finishes.
+  function onThemeChange() {
+    if (widgetId === null || verifyProblem || siteTheme() === renderedTheme) return;
+    if (requestInFlight) {
+      rerenderPending = true;
+      return;
+    }
+    rerenderTurnstile();
+  }
+
+  function rerenderTurnstile() {
+    rerenderPending = false;
+    turnstileToken = null;
+    try { window.turnstile.remove(widgetId); } catch (e) { /* render below replaces it either way */ }
+    widgetId = null;
+    renderTurnstile();
+  }
+
+  function renderTurnstile() {
+    if (!window.turnstile || typeof window.turnstile.render !== 'function') {
+      showVerifyProblem(LOAD_FAILED_TEXT);
+      return;
+    }
+    renderedTheme = siteTheme();
+    try {
+      widgetId = window.turnstile.render(verifyEl, {
+        sitekey: SITEKEY,
+        action: 'chat',
+        theme: renderedTheme,
+        size: 'flexible',
+        appearance: 'interaction-only',
+        retry: 'never', // an error shows the could-not-load notice once, never a retry loop
+        callback: function (token) { turnstileToken = token; },
+        'expired-callback': resetTurnstile,
+        'timeout-callback': resetTurnstile,
+        'error-callback': function () { showVerifyProblem(LOAD_FAILED_TEXT); },
+      });
+    } catch (e) {
+      showVerifyProblem(LOAD_FAILED_TEXT);
+    }
+  }
+
+  // First chat open only, never on page load, never twice.
+  function startTurnstile() {
+    if (turnstileStarted) return;
+    turnstileStarted = true;
+    if (!SITEKEY) {
+      showVerifyProblem(NOT_AVAILABLE_TEXT);
+      return;
+    }
+    var script = document.createElement('script');
+    script.src = TURNSTILE_SRC;
+    script.async = true;
+    script.onload = renderTurnstile;
+    script.onerror = function () { showVerifyProblem(LOAD_FAILED_TEXT); };
+    document.head.appendChild(script);
+    // The site's theme switch sets <html data-theme>; with no saved choice the site follows the OS live.
+    if (window.MutationObserver) {
+      new MutationObserver(onThemeChange).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+    var osLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+    if (osLight && osLight.addEventListener) osLight.addEventListener('change', onThemeChange);
+  }
+
   function persist() {
     try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-6))); } catch (e) {}
   }
@@ -269,6 +393,18 @@
     var text = input.value.trim();
     if (!text) return;
 
+    // Never send without a token. The message stays in the box; the visitor presses Send again.
+    if (verifyProblem) {
+      announce(verifyProblem);
+      return;
+    }
+    if (!turnstileToken) {
+      announce(VERIFYING_TEXT);
+      return;
+    }
+    var token = turnstileToken;
+    turnstileToken = null; // one token per message
+
     renderMessage('user', text);
     history.push({ role: 'user', content: text });
     persist();
@@ -281,6 +417,7 @@
     // Set at once, as before; cancels a reply announcement still waiting from the last message.
     clearTimeout(announceTimer);
     statusEl.textContent = 'Assistant is replying';
+    requestInFlight = true;
 
     return fetch(ENDPOINT, {
       method: 'POST',
@@ -290,6 +427,7 @@
       body: JSON.stringify({
         message: text,
         history: history.slice(0, -1).filter(function (m) { return m.role === 'user'; }).slice(-6),
+        turnstileToken: token,
       }),
     })
       .then(function (res) { return res.json(); })
@@ -307,8 +445,13 @@
         showAssistantMessage("Something went wrong - please try again, or email contact@fieldnotesecurity.com.");
       })
       .finally(function () {
+        // Success or failure (including the server's 403 verification error): fetch the next token,
+        // by a re-render if the theme changed during the request.
+        requestInFlight = false;
+        if (rerenderPending && widgetId !== null && !verifyProblem) rerenderTurnstile();
+        else resetTurnstile();
         input.readOnly = false;
-        sendBtn.removeAttribute('aria-disabled');
+        if (!verifyProblem) sendBtn.removeAttribute('aria-disabled');
         form.removeAttribute('aria-busy');
         input.focus();
       });
