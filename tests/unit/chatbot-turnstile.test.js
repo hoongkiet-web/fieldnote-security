@@ -3,7 +3,7 @@
 // shipped source runs against jsdom with a stand-in `location`. window.turnstile
 // is a fake and the api.js script is never fetched (jsdom does not load it; its
 // load/error handlers are fired by hand). Every token below is a fake.
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,6 +27,7 @@ function makeFakeTurnstile({ autoToken = true } = {}) {
     el: null,
     render: vi.fn((el, opts) => { t.el = el; t.opts = opts; if (t.autoToken) opts.callback(`fake-token-${++n}`); return 'fake-widget'; }),
     reset: vi.fn(() => { if (t.autoToken && t.opts) t.opts.callback(`fake-token-${++n}`); }),
+    remove: vi.fn(),
     give: (token) => t.opts.callback(token),
   };
   return t;
@@ -68,6 +69,8 @@ beforeEach(() => {
   delete window.__fnsChatPanel;
   delete window.__fnsMobileMenu;
   delete window.turnstile;
+  delete window.matchMedia;
+  document.documentElement.removeAttribute('data-theme');
   try { sessionStorage.clear(); } catch (e) { /* not available - fine */ }
   okFetch();
 });
@@ -99,7 +102,7 @@ describe('api.js loading', () => {
 });
 
 describe('render', () => {
-  it('on the staging host: staging sitekey, action chat, theme auto, flexible, interaction-only, all four callbacks', () => {
+  it('on the staging host: staging sitekey, action chat, the site theme, flexible, interaction-only, all four callbacks', () => {
     const t = loadWidget();
     openChat();
     expect(t.render).not.toHaveBeenCalled(); // waits for the script
@@ -108,7 +111,7 @@ describe('render', () => {
     const [el, opts] = t.render.mock.calls[0];
     expect(el).toBe($('#fnsChatVerify'));
     expect(opts).toMatchObject({
-      sitekey: STAGING_SITEKEY, action: 'chat', theme: 'auto', size: 'flexible', appearance: 'interaction-only', retry: 'never',
+      sitekey: STAGING_SITEKEY, action: 'chat', theme: 'dark', size: 'flexible', appearance: 'interaction-only', retry: 'never',
     });
     for (const cb of ['callback', 'expired-callback', 'error-callback', 'timeout-callback']) expect(typeof opts[cb]).toBe('function');
   });
@@ -292,5 +295,124 @@ describe('callbacks and load failures', () => {
     expect(notice().textContent).toContain(LOAD_FAILED);
     send();
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+});
+
+// Gate 2 chunk 6b: the widget follows the site's own theme (Gate 1 A3), read the way
+// js/theme-init.js and js/main.js apply it: <html data-theme>, else the OS preference.
+function stubOsPreference(light) {
+  const listeners = [];
+  const mql = { matches: light, addEventListener: (type, fn) => listeners.push(fn) };
+  window.matchMedia = vi.fn((q) => (q === '(prefers-color-scheme: light)' ? mql : { matches: false, addEventListener() {} }));
+  return { flip: (next) => { mql.matches = next; listeners.forEach((fn) => fn({ matches: next })); } };
+}
+// Each loadWidget() watches the same <html> element; on a real page there is one widget.
+// Disconnect the previous tests' observers so only this test's widget reacts.
+const observers = [];
+const RealMutationObserver = window.MutationObserver;
+beforeEach(() => {
+  window.MutationObserver = class extends RealMutationObserver {
+    constructor(cb) { super(cb); observers.push(this); }
+  };
+});
+afterEach(() => {
+  observers.splice(0).forEach((o) => o.disconnect());
+  window.MutationObserver = RealMutationObserver;
+});
+const flush = () => new Promise((r) => setTimeout(r, 0)); // MutationObserver callbacks run as microtasks
+
+describe('theme (Gate 2 chunk 6b)', () => {
+  it.each([
+    ['saved light -> light', 'light', null, 'light'],
+    ['saved dark -> dark', 'dark', true, 'dark'],
+    ['no choice, OS light -> light', null, true, 'light'],
+    ['no choice, OS dark -> dark', null, false, 'dark'],
+    ['no choice, no matchMedia -> dark', null, null, 'dark'],
+  ])('%s', (_name, saved, osLight, expected) => {
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+    if (osLight !== null) stubOsPreference(osLight);
+    const t = loadWidget();
+    openChat();
+    fireLoad();
+    expect(t.render.mock.calls[0][1].theme).toBe(expected);
+    expect(WIDGET_SRC).not.toMatch(/theme: 'auto'/);
+  });
+
+  it('a theme switch with no request in flight removes the widget, renders once with the new theme and clears the token', async () => {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    const t = loadWidget();
+    openChat();
+    fireLoad();
+    t.autoToken = false; // the re-render brings no token, so the old one must be gone
+    document.documentElement.setAttribute('data-theme', 'light');
+    await flush();
+    expect(t.remove).toHaveBeenCalledTimes(1);
+    expect(t.remove).toHaveBeenCalledWith('fake-widget');
+    expect(t.render).toHaveBeenCalledTimes(2);
+    expect(t.render.mock.calls[1][1].theme).toBe('light');
+    expect(t.remove.mock.invocationCallOrder[0]).toBeLessThan(t.render.mock.invocationCallOrder[1]); // never two widgets
+    send();
+    expect(global.fetch).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(status()).toBe(VERIFYING));
+  });
+
+  it('setting the same theme again does not re-render', async () => {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    const t = loadWidget();
+    openChat();
+    fireLoad();
+    document.documentElement.setAttribute('data-theme', 'dark');
+    await flush();
+    expect(t.render).toHaveBeenCalledTimes(1);
+    expect(t.remove).not.toHaveBeenCalled();
+  });
+
+  it('a theme switch during a request re-renders only after the request ends, once, instead of a reset', async () => {
+    let resolveFetch;
+    global.fetch = vi.fn(() => new Promise((r) => { resolveFetch = r; }));
+    document.documentElement.setAttribute('data-theme', 'dark');
+    const t = loadWidget();
+    openChat();
+    fireLoad();
+    send('Hello');
+    document.documentElement.setAttribute('data-theme', 'light');
+    await flush();
+    expect(t.render).toHaveBeenCalledTimes(1);
+    expect(t.remove).not.toHaveBeenCalled();
+    resolveFetch({ json: () => Promise.resolve({ reply: 'ok' }) });
+    await vi.waitFor(() => expect(t.render).toHaveBeenCalledTimes(2));
+    expect(t.render.mock.calls[1][1].theme).toBe('light');
+    expect(t.remove).toHaveBeenCalledTimes(1);
+    expect(t.reset).not.toHaveBeenCalled();
+    send('Second');
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(sentBody(1).turnstileToken).toBe('fake-token-2');
+  });
+
+  it('with no saved choice, an OS theme flip re-renders with the new theme', async () => {
+    const os = stubOsPreference(false);
+    const t = loadWidget();
+    openChat();
+    fireLoad();
+    expect(t.render.mock.calls[0][1].theme).toBe('dark');
+    os.flip(true);
+    expect(t.render).toHaveBeenCalledTimes(2);
+    expect(t.render.mock.calls[1][1].theme).toBe('light');
+    expect(t.remove).toHaveBeenCalledTimes(1);
+  });
+
+  it('no re-render after a verification failure, and nothing before the widget exists', async () => {
+    const t = loadWidget();
+    document.documentElement.setAttribute('data-theme', 'light'); // before the first open
+    await flush();
+    openChat();
+    fireLoad();
+    expect(t.render).toHaveBeenCalledTimes(1);
+    expect(t.render.mock.calls[0][1].theme).toBe('light');
+    t.opts['error-callback']();
+    document.documentElement.setAttribute('data-theme', 'dark');
+    await flush();
+    expect(t.render).toHaveBeenCalledTimes(1);
+    expect(t.remove).not.toHaveBeenCalled();
   });
 });

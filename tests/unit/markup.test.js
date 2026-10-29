@@ -72,7 +72,7 @@ it('aria-current="page" on Services only on services.html', () => {
   expect(current).toEqual(['services.html']);
 });
 
-it('counts: 12 aria-hidden arrows and 11 new-tab links across the site', () => {
+it('counts: 12 aria-hidden arrows and 12 new-tab links across the site', () => {
   let arrows = 0;
   let newTab = 0;
   for (const page of PAGES) {
@@ -81,7 +81,8 @@ it('counts: 12 aria-hidden arrows and 11 new-tab links across the site', () => {
     newTab += doc.querySelectorAll('a[target="_blank"]').length;
   }
   expect(arrows).toBe(12);
-  expect(newTab).toBe(11);
+  // 12 since Gate 2 chunk 6: the A6 "Turnstile Privacy Addendum" link in privacy-policy.html.
+  expect(newTab).toBe(12);
 });
 
 describe('sample-report.html table regions (F9)', () => {

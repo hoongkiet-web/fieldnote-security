@@ -36,6 +36,9 @@
   var verifyProblem = ''; // NOT_AVAILABLE_TEXT or LOAD_FAILED_TEXT once chat cannot be verified
   var widgetId = null;
   var turnstileToken = null; // in this variable only: never stored, logged or put in history
+  var renderedTheme = null;
+  var requestInFlight = false;
+  var rerenderPending = false;
 
   try {
     var saved = sessionStorage.getItem(STORAGE_KEY);
@@ -278,16 +281,44 @@
     try { window.turnstile.reset(widgetId); } catch (e) { /* the next send waits for a token */ }
   }
 
+  // The theme the site is showing: same rule as currentTheme() in js/main.js (saved choice on
+  // <html data-theme>, else the OS preference), so the widget matches the site's own switch.
+  function siteTheme() {
+    var t = document.documentElement.getAttribute('data-theme');
+    if (t === 'light' || t === 'dark') return t;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  // Theme changed after render: replace the widget (its theme is fixed at render), never two at once.
+  // During a request, wait until it finishes.
+  function onThemeChange() {
+    if (widgetId === null || verifyProblem || siteTheme() === renderedTheme) return;
+    if (requestInFlight) {
+      rerenderPending = true;
+      return;
+    }
+    rerenderTurnstile();
+  }
+
+  function rerenderTurnstile() {
+    rerenderPending = false;
+    turnstileToken = null;
+    try { window.turnstile.remove(widgetId); } catch (e) { /* render below replaces it either way */ }
+    widgetId = null;
+    renderTurnstile();
+  }
+
   function renderTurnstile() {
     if (!window.turnstile || typeof window.turnstile.render !== 'function') {
       showVerifyProblem(LOAD_FAILED_TEXT);
       return;
     }
+    renderedTheme = siteTheme();
     try {
       widgetId = window.turnstile.render(verifyEl, {
         sitekey: SITEKEY,
         action: 'chat',
-        theme: 'auto',
+        theme: renderedTheme,
         size: 'flexible',
         appearance: 'interaction-only',
         retry: 'never', // an error shows the could-not-load notice once, never a retry loop
@@ -315,6 +346,12 @@
     script.onload = renderTurnstile;
     script.onerror = function () { showVerifyProblem(LOAD_FAILED_TEXT); };
     document.head.appendChild(script);
+    // The site's theme switch sets <html data-theme>; with no saved choice the site follows the OS live.
+    if (window.MutationObserver) {
+      new MutationObserver(onThemeChange).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+    var osLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)');
+    if (osLight && osLight.addEventListener) osLight.addEventListener('change', onThemeChange);
   }
 
   function persist() {
@@ -380,6 +417,7 @@
     // Set at once, as before; cancels a reply announcement still waiting from the last message.
     clearTimeout(announceTimer);
     statusEl.textContent = 'Assistant is replying';
+    requestInFlight = true;
 
     return fetch(ENDPOINT, {
       method: 'POST',
@@ -407,8 +445,11 @@
         showAssistantMessage("Something went wrong - please try again, or email contact@fieldnotesecurity.com.");
       })
       .finally(function () {
-        // Success or failure (including the server's 403 verification error): fetch the next token.
-        resetTurnstile();
+        // Success or failure (including the server's 403 verification error): fetch the next token,
+        // by a re-render if the theme changed during the request.
+        requestInFlight = false;
+        if (rerenderPending && widgetId !== null && !verifyProblem) rerenderTurnstile();
+        else resetTurnstile();
         input.readOnly = false;
         if (!verifyProblem) sendBtn.removeAttribute('aria-disabled');
         form.removeAttribute('aria-busy');

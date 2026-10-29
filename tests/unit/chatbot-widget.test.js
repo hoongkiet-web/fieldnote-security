@@ -42,6 +42,7 @@ function makeFakeTurnstile() {
     opts: null,
     render: vi.fn((el, opts) => { t.opts = opts; if (t.autoToken) opts.callback(`fake-token-${++n}`); return 'fake-widget'; }),
     reset: vi.fn(() => { if (t.autoToken && t.opts) t.opts.callback(`fake-token-${++n}`); }),
+    remove: vi.fn(),
   };
   return t;
 }
